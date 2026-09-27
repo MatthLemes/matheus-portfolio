@@ -23,12 +23,24 @@ export const CertificationsSection: React.FC<CertificationsSectionProps> = ({ ce
           </p>
         </div>
 
-        {/* Certifications Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* Mobile Swipe Hint */}
+        {certifications.length > 1 && (
+          <div className="md:hidden flex items-center justify-between text-[11px] font-mono text-[#7D7D75] mb-2 px-1">
+            <span className="flex items-center gap-1.5">
+              <span>←</span>
+              <span>Deslize para ver credenciais</span>
+              <span>→</span>
+            </span>
+            <span className="text-[10px] text-[#A0A096]">({certifications.length})</span>
+          </div>
+        )}
+
+        {/* Certifications: Mobile Swipe Carousel / Desktop Grid */}
+        <div className="flex md:grid overflow-x-auto md:overflow-x-visible no-scrollbar snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 gap-3.5 sm:gap-4 md:grid-cols-2 lg:grid-cols-3 pb-3 md:pb-0">
           {certifications.map((cert, index) => (
             <div
               key={index}
-              className="p-4 bg-white border border-[#E2E2D8] hover:border-[#1A1A1A] rounded-xl transition-all shadow-xs flex flex-col justify-between"
+              className="w-[78vw] sm:w-[280px] md:w-auto shrink-0 md:shrink snap-start p-4 bg-white border border-[#E2E2D8] hover:border-[#1A1A1A] rounded-xl transition-all shadow-xs flex flex-col justify-between"
             >
               <div>
                 <div className="flex items-center justify-between text-xs font-mono text-[#828279] mb-2">

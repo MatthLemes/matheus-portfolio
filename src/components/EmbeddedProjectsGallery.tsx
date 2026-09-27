@@ -188,12 +188,24 @@ export const EmbeddedProjectsGallery: React.FC<EmbeddedProjectsGalleryProps> = (
           </div>
         )}
 
-        {/* Projects Grid */}
-        <div className={`grid grid-cols-1 ${projects.length > 1 ? 'md:grid-cols-2' : 'max-w-xl mx-auto'} gap-8 justify-center`}>
+        {/* Mobile Swipe Hint */}
+        {projects.length > 1 && (
+          <div className="md:hidden flex items-center justify-between text-[11px] font-mono text-[#7D7D75] mb-2 px-1">
+            <span className="flex items-center gap-1.5">
+              <span>←</span>
+              <span>Deslize para ver mais projetos</span>
+              <span>→</span>
+            </span>
+            <span className="text-[10px] text-[#A0A096]">({projects.length} projetos)</span>
+          </div>
+        )}
+
+        {/* Projects Grid / Mobile Swipe Carousel */}
+        <div className={`flex md:grid overflow-x-auto md:overflow-x-visible no-scrollbar snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 gap-4 sm:gap-6 md:gap-8 ${projects.length > 1 ? 'md:grid-cols-2' : 'max-w-xl mx-auto'} justify-start md:justify-center pb-3 md:pb-0`}>
           {projects.map((project) => (
             <div
               key={project.id}
-              className="group bg-white border border-[#E2E2D8] hover:border-[#0057FF]/50 rounded-2xl p-3 sm:p-4 flex flex-col items-center justify-center transition-all shadow-xs relative"
+              className="w-[88vw] sm:w-[380px] md:w-auto shrink-0 md:shrink snap-center group bg-white border border-[#E2E2D8] hover:border-[#0057FF]/50 rounded-2xl p-3 sm:p-4 flex flex-col items-center justify-center transition-all shadow-xs relative"
             >
               {curatorMode && (
                 <button

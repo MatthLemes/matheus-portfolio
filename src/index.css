@@ -34,3 +34,12 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #b5b5a9;
 }
+
+/* Mobile swipe carousel utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

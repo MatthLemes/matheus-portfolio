@@ -132,15 +132,27 @@ export const LinkedInHighlightsSection: React.FC<LinkedInHighlightsSectionProps>
           </div>
         </div>
 
-        {/* Highlights Grid with mini preview images */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Mobile Swipe Hint */}
+        {highlights.length > 1 && (
+          <div className="md:hidden flex items-center justify-between text-[11px] font-mono text-[#7D7D75] mb-2 px-1">
+            <span className="flex items-center gap-1.5">
+              <span>←</span>
+              <span>Deslize para ver mais artigos</span>
+              <span>→</span>
+            </span>
+            <span className="text-[10px] text-[#A0A096]">({highlights.length} artigos)</span>
+          </div>
+        )}
+
+        {/* Highlights Grid / Mobile Swipe Carousel */}
+        <div className="flex md:grid overflow-x-auto md:overflow-x-visible no-scrollbar snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3 pb-3 md:pb-0">
           {highlights.map((item) => {
             const embedSrc = getEmbedIframeSrc(item.embedCode);
 
             return (
               <div
                 key={item.id}
-                className="bg-white border border-[#E2E2D8] hover:border-[#0A66C2] rounded-xl overflow-hidden flex flex-col justify-between transition-all duration-200 shadow-xs hover:shadow-md group"
+                className="w-[85vw] sm:w-[340px] md:w-auto shrink-0 md:shrink snap-start bg-white border border-[#E2E2D8] hover:border-[#0A66C2] rounded-xl overflow-hidden flex flex-col justify-between transition-all duration-200 shadow-xs hover:shadow-md group"
               >
                 <div>
                   {/* Clean Non-Squished Preview Image or Natural Embed without inner scroll */}

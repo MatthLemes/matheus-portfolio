@@ -144,15 +144,23 @@ export const CreativeSpaceSection: React.FC<CreativeSpaceSectionProps> = ({
               )}
             </div>
 
-            {/* Spotify List */}
-            <div className="space-y-4">
+            {/* Mobile Swipe Hint for Spotify */}
+            {spotifyPlaylists.length > 1 && (
+              <div className="md:hidden flex items-center justify-between text-[11px] font-mono text-[#7D7D75] px-1">
+                <span>← Deslize para ver outras playlists →</span>
+                <span className="text-[10px] text-[#A0A096]">({spotifyPlaylists.length})</span>
+              </div>
+            )}
+
+            {/* Spotify List / Mobile Swipe Carousel */}
+            <div className="flex md:flex-col overflow-x-auto md:overflow-x-visible no-scrollbar snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 gap-3 pb-2 md:pb-0 md:space-y-4 md:gap-0">
               {spotifyPlaylists.map((item) => {
                 const embedSrc = parseSpotifySrc(item.embedUrlOrCode);
 
                 return (
                   <div
                     key={item.id}
-                    className="p-3.5 bg-white border border-[#E2E2D8] rounded-xl hover:border-[#1DB954]/60 transition-colors shadow-xs"
+                    className="w-[84vw] sm:w-[320px] md:w-auto shrink-0 md:shrink snap-start p-3.5 bg-white border border-[#E2E2D8] rounded-xl hover:border-[#1DB954]/60 transition-colors shadow-xs"
                   >
                     <div className="flex items-center justify-between mb-2">
                       <div>
@@ -228,12 +236,20 @@ export const CreativeSpaceSection: React.FC<CreativeSpaceSectionProps> = ({
               )}
             </div>
 
-            {/* Compact Poetry Cards */}
-            <div className="space-y-3">
+            {/* Mobile Swipe Hint for Poetry */}
+            {poems.length > 1 && (
+              <div className="md:hidden flex items-center justify-between text-[11px] font-mono text-[#7D7D75] px-1">
+                <span>← Deslize para ler outras poesias →</span>
+                <span className="text-[10px] text-[#A0A096]">({poems.length})</span>
+              </div>
+            )}
+
+            {/* Compact Poetry Cards / Mobile Swipe Carousel */}
+            <div className="flex md:flex-col overflow-x-auto md:overflow-x-visible no-scrollbar snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 gap-3 pb-2 md:pb-0 md:space-y-3 md:gap-0">
               {poems.map((poem) => (
                 <div
                   key={poem.id}
-                  className="p-4 bg-white border border-[#E2E2D8] rounded-xl hover:border-[#1A1A1A] transition-colors shadow-xs flex flex-col justify-between"
+                  className="w-[84vw] sm:w-[320px] md:w-auto shrink-0 md:shrink snap-start p-4 bg-white border border-[#E2E2D8] rounded-xl hover:border-[#1A1A1A] transition-colors shadow-xs flex flex-col justify-between"
                 >
                   <div>
                     <div className="flex items-center justify-between text-[11px] font-mono text-[#8C8C80] mb-1.5">

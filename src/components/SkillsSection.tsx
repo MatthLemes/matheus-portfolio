@@ -36,12 +36,22 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({ skills }) => {
           </p>
         </div>
 
-        {/* 4-column Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Mobile Swipe Hint */}
+        <div className="sm:hidden flex items-center justify-between text-[11px] font-mono text-[#7D7D75] mb-2 px-1">
+          <span className="flex items-center gap-1.5">
+            <span>←</span>
+            <span>Deslize para ver competências</span>
+            <span>→</span>
+          </span>
+          <span className="text-[10px] text-[#A0A096]">({skills.length} áreas)</span>
+        </div>
+
+        {/* 4-column Grid / Mobile Swipe Carousel */}
+        <div className="flex sm:grid overflow-x-auto sm:overflow-x-visible no-scrollbar snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 gap-4 sm:grid-cols-2 lg:grid-cols-4 pb-3 sm:pb-0">
           {skills.map((category) => (
             <div
               key={category.category}
-              className="bg-white border border-[#E2E2D8] rounded p-6 shadow-xs flex flex-col justify-between"
+              className="w-[78vw] sm:w-auto shrink-0 sm:shrink snap-start bg-white border border-[#E2E2D8] rounded-xl p-5 sm:p-6 shadow-xs flex flex-col justify-between"
             >
               <div>
                 <div className="flex items-center gap-2 mb-4 pb-3 border-b border-[#F0F0EA]">
