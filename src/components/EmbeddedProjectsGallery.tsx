@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { Plus, ExternalLink, Trash2, Code2, Layers, Check, Settings2, Eye } from 'lucide-react';
+import { Plus, ExternalLink, Trash2, Code2, Layers, Check, Settings2, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
 import { EmbeddedProject } from '../types/portfolio';
 
 interface EmbeddedProjectsGalleryProps {
   projects: EmbeddedProject[];
   behanceUrl: string;
-  onAddProject: (project: Omit<EmbeddedProject, 'id'>) => void;
+  onAddProject: (project: Omit<EmbeddedProject, 'id'>, insertAfterId?: string) => void;
   onDeleteProject: (id: string) => void;
+  onMoveProject?: (id: string, direction: 'prev' | 'next') => void;
   isAdmin?: boolean;
 }
 
@@ -15,6 +16,7 @@ export const EmbeddedProjectsGallery: React.FC<EmbeddedProjectsGalleryProps> = (
   behanceUrl,
   onAddProject,
   onDeleteProject,
+  onMoveProject,
   isAdmin = false,
 }) => {
   const [curatorMode, setCuratorMode] = useState(false);
@@ -24,6 +26,7 @@ export const EmbeddedProjectsGallery: React.FC<EmbeddedProjectsGalleryProps> = (
   const [embedCodeOrUrl, setEmbedCodeOrUrl] = useState('');
   const [description, setDescription] = useState('');
   const [tagsInput, setTagsInput] = useState('');
+  const [insertPosition, setInsertPosition] = useState<string>('after-logomarca');
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,14 +47,17 @@ export const EmbeddedProjectsGallery: React.FC<EmbeddedProjectsGalleryProps> = (
       }
     }
 
-    onAddProject({
-      title,
-      category,
-      embedCodeOrUrl,
-      description,
-      externalUrl,
-      tags,
-    });
+    onAddProject(
+      {
+        title,
+        category,
+        embedCodeOrUrl,
+        description,
+        externalUrl,
+        tags,
+      },
+      insertPosition
+    );
 
     setTitle('');
     setEmbedCodeOrUrl('');
@@ -202,19 +208,41 @@ export const EmbeddedProjectsGallery: React.FC<EmbeddedProjectsGalleryProps> = (
 
         {/* Projects Grid / Mobile Swipe Carousel */}
         <div className={`flex md:grid overflow-x-auto md:overflow-x-visible no-scrollbar snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 gap-4 sm:gap-6 md:gap-8 ${projects.length > 1 ? 'md:grid-cols-2' : 'max-w-xl mx-auto'} justify-start md:justify-center pb-3 md:pb-0`}>
-          {projects.map((project) => (
+          {projects.map((project, index) => (
             <div
               key={project.id}
               className="w-[88vw] sm:w-[380px] md:w-auto shrink-0 md:shrink snap-center group bg-white border border-[#E2E2D8] hover:border-[#0057FF]/50 rounded-2xl p-3 sm:p-4 flex flex-col items-center justify-center transition-all shadow-xs relative"
             >
               {curatorMode && (
-                <button
-                  onClick={() => onDeleteProject(project.id)}
-                  title="Remover projeto da vitrine"
-                  className="absolute top-2 right-2 z-10 p-1.5 bg-white text-[#999990] hover:text-red-600 rounded-full border border-[#E5E5DC] shadow-xs transition-colors"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
+                <div className="absolute top-2 right-2 z-10 flex items-center gap-1 bg-white/95 backdrop-blur-xs p-1 rounded-full border border-[#E5E5DC] shadow-xs">
+                  {onMoveProject && (
+                    <>
+                      <button
+                        onClick={() => onMoveProject(project.id, 'prev')}
+                        disabled={index === 0}
+                        title="Mover para a esquerda / anterior"
+                        className="p-1 text-[#66665E] hover:text-[#0057FF] hover:bg-[#F0F4FF] disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#66665E] rounded-full transition-colors"
+                      >
+                        <ChevronLeft className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => onMoveProject(project.id, 'next')}
+                        disabled={index === projects.length - 1}
+                        title="Mover para a direita / próximo"
+                        className="p-1 text-[#66665E] hover:text-[#0057FF] hover:bg-[#F0F4FF] disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#66665E] rounded-full transition-colors"
+                      >
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
+                    </>
+                  )}
+                  <button
+                    onClick={() => onDeleteProject(project.id)}
+                    title="Remover projeto da vitrine"
+                    className="p-1 text-[#999990] hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               )}
 
               {/* Behance Embed Viewport */}
@@ -322,6 +350,25 @@ export const EmbeddedProjectsGallery: React.FC<EmbeddedProjectsGalleryProps> = (
                   onChange={(e) => setDescription(e.target.value)}
                   className="w-full px-3 py-2 text-sm border border-[#D5D5CA] rounded bg-[#FAF9F6] focus:bg-white focus:outline-none focus:border-[#1A1A1A]"
                 />
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono uppercase text-[#66665E] mb-1">
+                  Posição na Vitrine
+                </label>
+                <select
+                  value={insertPosition}
+                  onChange={(e) => setInsertPosition(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-[#D5D5CA] rounded bg-[#FAF9F6] focus:bg-white focus:outline-none focus:border-[#1A1A1A]"
+                >
+                  <option value="start">No início (Primeiro da vitrine)</option>
+                  {projects.map((p) => (
+                    <option key={p.id} value={`after:${p.id}`}>
+                      Depois de: {p.title}
+                    </option>
+                  ))}
+                  <option value="end">No final (Último da vitrine)</option>
+                </select>
               </div>
 
               <div>

@@ -32,7 +32,42 @@ export default function App() {
     try {
       const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (saved) {
-        return JSON.parse(saved);
+        const parsed: PortfolioData = JSON.parse(saved);
+        // Ensure new project 256368613 is inserted right after Logomarca 2023 if not yet present
+        const hasProject = parsed.embeddedProjects?.some(
+          (p) => p.embedCodeOrUrl?.includes('256368613') || p.id === 'emb-256368613'
+        );
+        if (!hasProject && Array.isArray(parsed.embeddedProjects)) {
+          const newProject: EmbeddedProject = {
+            id: 'emb-256368613',
+            title: 'TCC - Guia Informacional',
+            description: 'Projeto de graduação com design editorial e guia informacional publicado no Behance.',
+            category: 'Design Editorial & Informacional',
+            embedCodeOrUrl: '<iframe src="https://www.behance.net/embed/project/256368613?ilo0=1" height="316" width="404" allowfullscreen lazyload frameborder="0" allow="clipboard-write" refererPolicy="strict-origin-when-cross-origin"></iframe>',
+            externalUrl: 'https://www.behance.net/gallery/256368613/TCC-Guia-Informacional',
+            tags: ['Behance', 'Design Editorial', 'TCC'],
+          };
+
+          const targetIndex = parsed.embeddedProjects.findIndex(
+            (p) =>
+              p.title?.toLowerCase().includes('logomarca 2023') ||
+              p.embedCodeOrUrl?.includes('234094405') ||
+              p.title?.toLowerCase().includes('logomarca')
+          );
+
+          if (targetIndex !== -1) {
+            parsed.embeddedProjects.splice(targetIndex + 1, 0, newProject);
+          } else {
+            parsed.embeddedProjects.push(newProject);
+          }
+
+          try {
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(parsed));
+          } catch {
+            // storage unavailable
+          }
+        }
+        return parsed;
       }
     } catch {
       // Fallback
@@ -68,15 +103,44 @@ export default function App() {
   };
 
   // Handlers for Behance / Project Embeds
-  const handleAddProject = (newProject: Omit<EmbeddedProject, 'id'>) => {
-    const updatedProjects: EmbeddedProject[] = [
-      {
-        ...newProject,
-        id: `emb-${Date.now()}`,
-      },
-      ...data.embeddedProjects,
-    ];
+  const handleAddProject = (newProject: Omit<EmbeddedProject, 'id'>, position?: string) => {
+    const newItem: EmbeddedProject = {
+      ...newProject,
+      id: `emb-${Date.now()}`,
+    };
+
+    let updatedProjects = [...data.embeddedProjects];
+
+    if (position === 'start') {
+      updatedProjects = [newItem, ...updatedProjects];
+    } else if (position === 'end') {
+      updatedProjects = [...updatedProjects, newItem];
+    } else if (position?.startsWith('after:')) {
+      const targetId = position.replace('after:', '');
+      const index = updatedProjects.findIndex((p) => p.id === targetId);
+      if (index !== -1) {
+        updatedProjects.splice(index + 1, 0, newItem);
+      } else {
+        updatedProjects = [newItem, ...updatedProjects];
+      }
+    } else {
+      updatedProjects = [newItem, ...updatedProjects];
+    }
+
     const updatedData = { ...data, embeddedProjects: updatedProjects };
+    handleSaveData(updatedData);
+  };
+
+  const handleMoveProject = (id: string, direction: 'prev' | 'next') => {
+    const index = data.embeddedProjects.findIndex((p) => p.id === id);
+    if (index === -1) return;
+    const targetIndex = direction === 'prev' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= data.embeddedProjects.length) return;
+
+    const newProjects = [...data.embeddedProjects];
+    const [moved] = newProjects.splice(index, 1);
+    newProjects.splice(targetIndex, 0, moved);
+    const updatedData = { ...data, embeddedProjects: newProjects };
     handleSaveData(updatedData);
   };
 
@@ -195,6 +259,7 @@ export default function App() {
           behanceUrl={data.links.behance}
           onAddProject={handleAddProject}
           onDeleteProject={handleDeleteProject}
+          onMoveProject={handleMoveProject}
           isAdmin={isAdmin}
         />
 

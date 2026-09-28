@@ -260,12 +260,21 @@ export const defaultPortfolioData: PortfolioData = {
     },
     {
       id: "emb-2",
-      title: "Projeto em Destaque — Behance",
-      description: "Estudo de caso visual com conceito criativo, direção de arte e aplicações completas publicado no Behance.",
-      category: "Design & Identidade",
+      title: "Logomarca 2023",
+      description: "Estudo e criação de logomarca e identidade visual publicado no Behance.",
+      category: "Identidade Visual & Branding",
       embedCodeOrUrl: "<iframe src=\"https://www.behance.net/embed/project/234094405?ilo0=1\" height=\"316\" width=\"404\" allowfullscreen lazyload frameborder=\"0\" allow=\"clipboard-write\" refererPolicy=\"strict-origin-when-cross-origin\"></iframe>",
       externalUrl: "https://www.behance.net/gallery/234094405",
-      tags: ["Behance", "Identidade Visual", "Direção de Arte"]
+      tags: ["Behance", "Logomarca", "Identidade Visual"]
+    },
+    {
+      id: "emb-256368613",
+      title: "TCC - Guia Informacional",
+      description: "Projeto de graduação com design editorial e guia informacional publicado no Behance.",
+      category: "Design Editorial & Informacional",
+      embedCodeOrUrl: "<iframe src=\"https://www.behance.net/embed/project/256368613?ilo0=1\" height=\"316\" width=\"404\" allowfullscreen lazyload frameborder=\"0\" allow=\"clipboard-write\" refererPolicy=\"strict-origin-when-cross-origin\"></iframe>",
+      externalUrl: "https://www.behance.net/gallery/256368613/TCC-Guia-Informacional",
+      tags: ["Behance", "Design Editorial", "TCC"]
     }
   ],
   spotifyPlaylists: [
