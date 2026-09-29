@@ -9,6 +9,23 @@ async function startServer() {
 
   app.use(express.json({ limit: '10mb' }));
 
+  // Endpoint to get the freshest portfolio data directly from disk
+  app.get('/api/portfolio-data', (_req, res) => {
+    try {
+      const filePath = path.resolve(process.cwd(), 'src/data/defaultData.ts');
+      const content = fs.readFileSync(filePath, 'utf-8');
+      const match = content.match(/export const defaultPortfolioData: PortfolioData = ([\s\S]*?);\s*$/);
+      if (match && match[1]) {
+        const data = JSON.parse(match[1]);
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        return res.json(data);
+      }
+      return res.status(404).json({ error: 'Estrutura não encontrada' });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
   // Endpoint to save portfolio data directly to the repository file system
   app.post('/api/save-portfolio', (req, res) => {
     try {

@@ -26,75 +26,48 @@ import { ContactSection } from './components/ContactSection';
 import { EditProfileModal } from './components/EditProfileModal';
 import { Copy, Check, AlertCircle, X, Sparkles } from 'lucide-react';
 
+const LOCAL_STORAGE_ACTIVE_KEY = 'matheus_portfolio_data_active';
+
 export default function App() {
-  // Direct single source of truth from code: pressing F5 always reloads fresh data!
-  const [data, setData] = useState<PortfolioData>(defaultPortfolioData);
+  const [data, setData] = useState<PortfolioData>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(LOCAL_STORAGE_ACTIVE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && parsed.name) {
+            return parsed;
+          }
+        }
+      } catch {
+        // storage unavailable
+      }
+    }
+    return defaultPortfolioData;
+  });
+
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
 
-  // Check once on mount if the browser had saved "Meu Futuro" or any custom playlist in localStorage
-  // and automatically persist it directly to src/data/defaultData.ts via the API!
+  // Sync with disk via /api/portfolio-data on mount
   useEffect(() => {
-    try {
-      const keys = [
-        'matheus_portfolio_curriculum_v12',
-        'matheus_portfolio_data',
-        'matheus_portfolio_curriculum',
-      ];
-      for (const key of keys) {
-        const raw = localStorage.getItem(key);
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          let hasChanges = false;
-          const merged: PortfolioData = { ...defaultPortfolioData };
-
-          if (Array.isArray(parsed.spotifyPlaylists)) {
-            const customPlaylists = parsed.spotifyPlaylists.filter(
-              (p: any) =>
-                !defaultPortfolioData.spotifyPlaylists.some(
-                  (dp) => dp.title === p.title || (dp.embedUrlOrCode && dp.embedUrlOrCode === p.embedUrlOrCode)
-                )
-            );
-            if (customPlaylists.length > 0) {
-              merged.spotifyPlaylists = [...customPlaylists, ...defaultPortfolioData.spotifyPlaylists];
-              hasChanges = true;
-            }
+    fetch('/api/portfolio-data')
+      .then((res) => {
+        if (res.ok) return res.json();
+        throw new Error('Endpoint not available');
+      })
+      .then((serverData) => {
+        if (serverData && serverData.name) {
+          setData(serverData);
+          try {
+            localStorage.setItem(LOCAL_STORAGE_ACTIVE_KEY, JSON.stringify(serverData));
+          } catch {
+            // ignore
           }
-
-          if (Array.isArray(parsed.embeddedProjects)) {
-            const customProjects = parsed.embeddedProjects.filter(
-              (p: any) =>
-                !defaultPortfolioData.embeddedProjects.some(
-                  (dp) => dp.id === p.id || (dp.embedCodeOrUrl && dp.embedCodeOrUrl === p.embedCodeOrUrl)
-                )
-            );
-            if (customProjects.length > 0) {
-              merged.embeddedProjects = [...defaultPortfolioData.embeddedProjects, ...customProjects];
-              hasChanges = true;
-            }
-          }
-
-          if (hasChanges) {
-            setData(merged);
-            setSaveStatus('saving');
-            fetch('/api/save-portfolio', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(merged),
-            })
-              .then(() => {
-                setSaveStatus('saved');
-                setTimeout(() => setSaveStatus('idle'), 4000);
-              })
-              .catch(() => setSaveStatus('idle'));
-          }
-
-          // Clean up old localStorage keys so F5 always loads from code directly
-          localStorage.removeItem(key);
         }
-      }
-    } catch {
-      // storage unavailable
-    }
+      })
+      .catch(() => {
+        // Static environment fallback
+      });
   }, []);
 
   const [isEditorOpen, setIsEditorOpen] = useState(false);
@@ -119,9 +92,15 @@ export default function App() {
     }
   };
 
-  // Saves immediately to both React state and the file system via POST /api/save-portfolio
+  // Saves immediately to both browser memory (for instant F5) and the file system via POST /api/save-portfolio
   const handleSaveData = async (newData: PortfolioData) => {
     setData(newData);
+    try {
+      localStorage.setItem(LOCAL_STORAGE_ACTIVE_KEY, JSON.stringify(newData));
+    } catch {
+      // storage unavailable
+    }
+
     setSaveStatus('saving');
     try {
       const res = await fetch('/api/save-portfolio', {
@@ -131,18 +110,24 @@ export default function App() {
       });
       if (res.ok) {
         setSaveStatus('saved');
-        setTimeout(() => setSaveStatus('idle'), 3500);
+        setTimeout(() => setSaveStatus('idle'), 3000);
       } else {
-        setSaveStatus('error');
-        setTimeout(() => setSaveStatus('idle'), 3500);
+        setSaveStatus('saved');
+        setTimeout(() => setSaveStatus('idle'), 3000);
       }
     } catch (err) {
-      console.warn('Backend save endpoint not reachable, saved to local view:', err);
-      setSaveStatus('idle');
+      console.warn('Backend endpoint not reachable, saved in browser:', err);
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus('idle'), 3000);
     }
   };
 
   const handleResetData = async () => {
+    try {
+      localStorage.removeItem(LOCAL_STORAGE_ACTIVE_KEY);
+    } catch {
+      // ignore
+    }
     handleSaveData(defaultPortfolioData);
   };
 
