@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { defaultPortfolioData, matheusPortrait } from './data/defaultData';
 import {
   PortfolioData,
@@ -24,56 +24,78 @@ import { CreativeSpaceSection } from './components/CreativeSpaceSection';
 import { SkillsSection } from './components/SkillsSection';
 import { ContactSection } from './components/ContactSection';
 import { EditProfileModal } from './components/EditProfileModal';
-
-const LOCAL_STORAGE_KEY = 'matheus_portfolio_curriculum_v12';
+import { Copy, Check, AlertCircle, X, Sparkles } from 'lucide-react';
 
 export default function App() {
-  const [data, setData] = useState<PortfolioData>(() => {
+  // Direct single source of truth from code: pressing F5 always reloads fresh data!
+  const [data, setData] = useState<PortfolioData>(defaultPortfolioData);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+
+  // Check once on mount if the browser had saved "Meu Futuro" or any custom playlist in localStorage
+  // and automatically persist it directly to src/data/defaultData.ts via the API!
+  useEffect(() => {
     try {
-      const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
-      if (saved) {
-        const parsed: PortfolioData = JSON.parse(saved);
-        // Ensure new project 256368613 is inserted right after Logomarca 2023 if not yet present
-        const hasProject = parsed.embeddedProjects?.some(
-          (p) => p.embedCodeOrUrl?.includes('256368613') || p.id === 'emb-256368613'
-        );
-        if (!hasProject && Array.isArray(parsed.embeddedProjects)) {
-          const newProject: EmbeddedProject = {
-            id: 'emb-256368613',
-            title: 'TCC - Guia Informacional',
-            description: 'Projeto de graduação com design editorial e guia informacional publicado no Behance.',
-            category: 'Design Editorial & Informacional',
-            embedCodeOrUrl: '<iframe src="https://www.behance.net/embed/project/256368613?ilo0=1" height="316" width="404" allowfullscreen lazyload frameborder="0" allow="clipboard-write" refererPolicy="strict-origin-when-cross-origin"></iframe>',
-            externalUrl: 'https://www.behance.net/gallery/256368613/TCC-Guia-Informacional',
-            tags: ['Behance', 'Design Editorial', 'TCC'],
-          };
+      const keys = [
+        'matheus_portfolio_curriculum_v12',
+        'matheus_portfolio_data',
+        'matheus_portfolio_curriculum',
+      ];
+      for (const key of keys) {
+        const raw = localStorage.getItem(key);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          let hasChanges = false;
+          const merged: PortfolioData = { ...defaultPortfolioData };
 
-          const targetIndex = parsed.embeddedProjects.findIndex(
-            (p) =>
-              p.title?.toLowerCase().includes('logomarca 2023') ||
-              p.embedCodeOrUrl?.includes('234094405') ||
-              p.title?.toLowerCase().includes('logomarca')
-          );
-
-          if (targetIndex !== -1) {
-            parsed.embeddedProjects.splice(targetIndex + 1, 0, newProject);
-          } else {
-            parsed.embeddedProjects.push(newProject);
+          if (Array.isArray(parsed.spotifyPlaylists)) {
+            const customPlaylists = parsed.spotifyPlaylists.filter(
+              (p: any) =>
+                !defaultPortfolioData.spotifyPlaylists.some(
+                  (dp) => dp.title === p.title || (dp.embedUrlOrCode && dp.embedUrlOrCode === p.embedUrlOrCode)
+                )
+            );
+            if (customPlaylists.length > 0) {
+              merged.spotifyPlaylists = [...customPlaylists, ...defaultPortfolioData.spotifyPlaylists];
+              hasChanges = true;
+            }
           }
 
-          try {
-            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(parsed));
-          } catch {
-            // storage unavailable
+          if (Array.isArray(parsed.embeddedProjects)) {
+            const customProjects = parsed.embeddedProjects.filter(
+              (p: any) =>
+                !defaultPortfolioData.embeddedProjects.some(
+                  (dp) => dp.id === p.id || (dp.embedCodeOrUrl && dp.embedCodeOrUrl === p.embedCodeOrUrl)
+                )
+            );
+            if (customProjects.length > 0) {
+              merged.embeddedProjects = [...defaultPortfolioData.embeddedProjects, ...customProjects];
+              hasChanges = true;
+            }
           }
+
+          if (hasChanges) {
+            setData(merged);
+            setSaveStatus('saving');
+            fetch('/api/save-portfolio', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(merged),
+            })
+              .then(() => {
+                setSaveStatus('saved');
+                setTimeout(() => setSaveStatus('idle'), 4000);
+              })
+              .catch(() => setSaveStatus('idle'));
+          }
+
+          // Clean up old localStorage keys so F5 always loads from code directly
+          localStorage.removeItem(key);
         }
-        return parsed;
       }
     } catch {
-      // Fallback
+      // storage unavailable
     }
-    return defaultPortfolioData;
-  });
+  }, []);
 
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(() => {
@@ -97,22 +119,31 @@ export default function App() {
     }
   };
 
-  const handleSaveData = (newData: PortfolioData) => {
+  // Saves immediately to both React state and the file system via POST /api/save-portfolio
+  const handleSaveData = async (newData: PortfolioData) => {
     setData(newData);
+    setSaveStatus('saving');
     try {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newData));
-    } catch {
-      // storage unavailable
+      const res = await fetch('/api/save-portfolio', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newData),
+      });
+      if (res.ok) {
+        setSaveStatus('saved');
+        setTimeout(() => setSaveStatus('idle'), 3500);
+      } else {
+        setSaveStatus('error');
+        setTimeout(() => setSaveStatus('idle'), 3500);
+      }
+    } catch (err) {
+      console.warn('Backend save endpoint not reachable, saved to local view:', err);
+      setSaveStatus('idle');
     }
   };
 
-  const handleResetData = () => {
-    setData(defaultPortfolioData);
-    try {
-      localStorage.removeItem(LOCAL_STORAGE_KEY);
-    } catch {
-      // storage unavailable
-    }
+  const handleResetData = async () => {
+    handleSaveData(defaultPortfolioData);
   };
 
   // Handlers for Behance / Project Embeds
@@ -222,6 +253,40 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#FCFCFB] text-[#1A1A1A] flex flex-col font-sans selection:bg-amber-100 selection:text-amber-900">
+      {/* Notificação Flutuante de Salvamento Automático */}
+      {saveStatus !== 'idle' && (
+        <div className="fixed top-4 right-4 z-50 transition-all duration-300">
+          <div
+            className={`px-4 py-2.5 rounded-lg shadow-xl flex items-center gap-2.5 text-xs font-medium border backdrop-blur-md ${
+              saveStatus === 'saved'
+                ? 'bg-[#1A1A1A] text-white border-emerald-500/50'
+                : saveStatus === 'saving'
+                ? 'bg-[#1A1A1A] text-white border-amber-400/50'
+                : 'bg-red-950 text-white border-red-500/50'
+            }`}
+          >
+            {saveStatus === 'saving' && (
+              <>
+                <div className="w-3.5 h-3.5 rounded-full border-2 border-amber-400 border-t-transparent animate-spin" />
+                <span>Gravando alteração no arquivo do projeto...</span>
+              </>
+            )}
+            {saveStatus === 'saved' && (
+              <>
+                <Check className="w-4 h-4 text-emerald-400" />
+                <span>✓ Salvo automaticamente no projeto! Pronto para o Git e Vercel.</span>
+              </>
+            )}
+            {saveStatus === 'error' && (
+              <>
+                <AlertCircle className="w-4 h-4 text-rose-400" />
+                <span>Salvo na prévia local.</span>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* 3-Zone Top Navigation Contract */}
       <Navbar
         name={data.name}
