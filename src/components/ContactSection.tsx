@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, ArrowUpRight, Copy, Check, Send, Phone, MessageSquare } from 'lucide-react';
+import { Mail, ArrowUpRight, Copy, Check, Send, Phone, MessageSquare, Lock } from 'lucide-react';
 import { SocialLinks } from '../types/portfolio';
 
 interface ContactSectionProps {
@@ -7,7 +7,8 @@ interface ContactSectionProps {
   name: string;
   email: string;
   isAdmin?: boolean;
-  onToggleAdmin?: () => void;
+  onOpenLoginModal?: () => void;
+  onLogoutAdmin?: () => void;
 }
 
 export const ContactSection: React.FC<ContactSectionProps> = ({
@@ -15,7 +16,8 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
   name,
   email,
   isAdmin = false,
-  onToggleAdmin,
+  onOpenLoginModal,
+  onLogoutAdmin,
 }) => {
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [senderName, setSenderName] = useState('');
@@ -187,17 +189,25 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
             <span>IA Aplicada</span>
           </div>
 
-          {onToggleAdmin && (
+          {isAdmin ? (
             <button
-              onClick={onToggleAdmin}
-              className={`text-[11px] font-mono px-2.5 py-1 rounded transition-colors border ${
-                isAdmin
-                  ? 'bg-[#1A1A1A] text-white border-[#1A1A1A]'
-                  : 'bg-transparent text-[#9E9E94] hover:text-[#1A1A1A] border-transparent hover:border-[#D5D5CA]'
-              }`}
+              onClick={onLogoutAdmin}
+              className="text-[11px] font-mono px-2.5 py-1 rounded transition-colors bg-[#1A1A1A] text-white hover:bg-[#333] border border-[#1A1A1A] flex items-center gap-1.5"
             >
-              {isAdmin ? '🔒 Sair do Modo ADM' : '⚙️ Modo ADM (Autor)'}
+              <Lock className="w-3 h-3 text-emerald-400" />
+              <span>Sair do Modo ADM</span>
             </button>
+          ) : (
+            onOpenLoginModal && (
+              <button
+                onClick={onOpenLoginModal}
+                className="text-[11px] font-mono text-[#A8A89E] hover:text-[#1A1A1A] transition-colors flex items-center gap-1.5 px-2 py-0.5 rounded hover:bg-[#F2F2EC]"
+                title="Acesso exclusivo do autor (requer senha)"
+              >
+                <Lock className="w-3 h-3" />
+                <span>Área do Autor</span>
+              </button>
+            )
           )}
         </div>
       </div>

@@ -24,6 +24,7 @@ import { CreativeSpaceSection } from './components/CreativeSpaceSection';
 import { SkillsSection } from './components/SkillsSection';
 import { ContactSection } from './components/ContactSection';
 import { EditProfileModal } from './components/EditProfileModal';
+import { AdminLoginModal } from './components/AdminLoginModal';
 import { Copy, Check, AlertCircle, X, Sparkles } from 'lucide-react';
 
 const LOCAL_STORAGE_ACTIVE_KEY = 'matheus_portfolio_data_active';
@@ -71,22 +72,42 @@ export default function App() {
   }, []);
 
   const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
+  // Admin access is strictly protected: requires password authentication
   const [isAdmin, setIsAdmin] = useState(() => {
     if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('admin') === 'true' || params.get('edit') === 'true') {
-        return true;
-      }
-      return localStorage.getItem('matheus_admin_active') === 'true';
+      return localStorage.getItem('matheus_admin_authenticated') === 'true';
     }
     return false;
   });
 
-  const toggleAdmin = () => {
-    const next = !isAdmin;
-    setIsAdmin(next);
+  // If visitor accesses with ?admin=true, prompt for password instead of unlocking directly
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('admin') === 'true' || params.get('edit') === 'true') {
+        if (!isAdmin) {
+          setIsLoginModalOpen(true);
+        }
+      }
+    }
+  }, [isAdmin]);
+
+  const handleLoginSuccess = () => {
+    setIsAdmin(true);
     try {
-      localStorage.setItem('matheus_admin_active', String(next));
+      localStorage.setItem('matheus_admin_authenticated', 'true');
+    } catch {
+      // storage unavailable
+    }
+  };
+
+  const handleLogout = () => {
+    setIsAdmin(false);
+    try {
+      localStorage.removeItem('matheus_admin_authenticated');
+      localStorage.removeItem('matheus_admin_active');
     } catch {
       // storage unavailable
     }
@@ -358,7 +379,8 @@ export default function App() {
           name={data.name}
           email={data.email}
           isAdmin={isAdmin}
-          onToggleAdmin={toggleAdmin}
+          onOpenLoginModal={() => setIsLoginModalOpen(true)}
+          onLogoutAdmin={handleLogout}
         />
       </main>
 
@@ -376,7 +398,7 @@ export default function App() {
             Editar Perfil
           </button>
           <button
-            onClick={toggleAdmin}
+            onClick={handleLogout}
             className="text-white/50 hover:text-white pl-2 border-l border-white/20 transition-colors"
             title="Sair do modo administrador"
           >
@@ -384,6 +406,13 @@ export default function App() {
           </button>
         </div>
       )}
+
+      {/* Modal de Autenticação do Administrador */}
+      <AdminLoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        onSuccess={handleLoginSuccess}
+      />
 
       {/* Modal de Personalização */}
       <EditProfileModal
