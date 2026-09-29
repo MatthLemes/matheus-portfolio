@@ -76,13 +76,26 @@ export default function App() {
   });
 
   const [isEditorOpen, setIsEditorOpen] = useState(false);
-  const [isAdmin] = useState(() => {
+  const [isAdmin, setIsAdmin] = useState(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
-      return params.get('admin') === 'true' || params.get('edit') === 'true';
+      if (params.get('admin') === 'true' || params.get('edit') === 'true') {
+        return true;
+      }
+      return localStorage.getItem('matheus_admin_active') === 'true';
     }
     return false;
   });
+
+  const toggleAdmin = () => {
+    const next = !isAdmin;
+    setIsAdmin(next);
+    try {
+      localStorage.setItem('matheus_admin_active', String(next));
+    } catch {
+      // storage unavailable
+    }
+  };
 
   const handleSaveData = (newData: PortfolioData) => {
     setData(newData);
@@ -294,8 +307,33 @@ export default function App() {
           links={data.links}
           name={data.name}
           email={data.email}
+          isAdmin={isAdmin}
+          onToggleAdmin={toggleAdmin}
         />
       </main>
+
+      {/* Floating Admin Status Bar */}
+      {isAdmin && (
+        <div className="fixed bottom-4 right-4 z-40 bg-[#1A1A1A] text-white px-3.5 py-2 rounded-full shadow-xl flex items-center gap-3 text-xs border border-white/20 backdrop-blur-md">
+          <span className="flex items-center gap-1.5 font-medium">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            Modo ADM
+          </span>
+          <button
+            onClick={() => setIsEditorOpen(true)}
+            className="text-white/80 hover:text-white underline underline-offset-2 transition-colors"
+          >
+            Editar Perfil
+          </button>
+          <button
+            onClick={toggleAdmin}
+            className="text-white/50 hover:text-white pl-2 border-l border-white/20 transition-colors"
+            title="Sair do modo administrador"
+          >
+            Sair
+          </button>
+        </div>
+      )}
 
       {/* Modal de Personalização */}
       <EditProfileModal

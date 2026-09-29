@@ -6,12 +6,16 @@ interface ContactSectionProps {
   links: SocialLinks;
   name: string;
   email: string;
+  isAdmin?: boolean;
+  onToggleAdmin?: () => void;
 }
 
 export const ContactSection: React.FC<ContactSectionProps> = ({
   links,
   name,
   email,
+  isAdmin = false,
+  onToggleAdmin,
 }) => {
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [senderName, setSenderName] = useState('');
@@ -182,6 +186,19 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
             <span aria-hidden="true">·</span>
             <span>IA Aplicada</span>
           </div>
+
+          {onToggleAdmin && (
+            <button
+              onClick={onToggleAdmin}
+              className={`text-[11px] font-mono px-2.5 py-1 rounded transition-colors border ${
+                isAdmin
+                  ? 'bg-[#1A1A1A] text-white border-[#1A1A1A]'
+                  : 'bg-transparent text-[#9E9E94] hover:text-[#1A1A1A] border-transparent hover:border-[#D5D5CA]'
+              }`}
+            >
+              {isAdmin ? '🔒 Sair do Modo ADM' : '⚙️ Modo ADM (Autor)'}
+            </button>
+          )}
         </div>
       </div>
     </section>
