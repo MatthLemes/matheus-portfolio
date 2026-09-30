@@ -4,7 +4,8 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { defaultPortfolioData, matheusPortrait } from './data/defaultData';
+import { defaultPortfolioData } from './data/defaultData';
+import matheusPortrait from './assets/images/matheus_portrait_1790445047363.jpg';
 import {
   PortfolioData,
   EmbeddedProject,

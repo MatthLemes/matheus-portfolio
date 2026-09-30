@@ -1,7 +1,4 @@
 import { PortfolioData } from '../types/portfolio';
-import matheusPortrait from '../assets/images/matheus_portrait_1790445047363.jpg';
-
-export { matheusPortrait };
 
 export const defaultPortfolioData: PortfolioData = {
   name: "Matheus Lemes",
@@ -278,6 +275,13 @@ export const defaultPortfolioData: PortfolioData = {
     }
   ],
   spotifyPlaylists: [
+    {
+      id: "spot-meu-futuro",
+      title: "Meu Futuro",
+      subtitle: "De onde eu vim, e a onde eu vou!",
+      embedUrlOrCode: "https://open.spotify.com/embed/playlist/5OwILCZlYn5SzlS9VG3AkG?utm_source=generator",
+      externalUrl: "https://open.spotify.com/playlist/5OwILCZlYn5SzlS9VG3AkG"
+    },
     {
       id: "spot-1790461077430",
       title: "Bjork: Mixed",

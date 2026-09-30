@@ -2,28 +2,20 @@ import express from 'express';
 import { createServer as createViteServer } from 'vite';
 import fs from 'fs';
 import path from 'path';
+import { defaultPortfolioData } from './src/data/defaultData';
 
 async function startServer() {
   const app = express();
   const PORT = 3000;
 
+  let currentPortfolioData = defaultPortfolioData;
+
   app.use(express.json({ limit: '10mb' }));
 
-  // Endpoint to get the freshest portfolio data directly from disk
+  // Endpoint to get the freshest portfolio data directly
   app.get('/api/portfolio-data', (_req, res) => {
-    try {
-      const filePath = path.resolve(process.cwd(), 'src/data/defaultData.ts');
-      const content = fs.readFileSync(filePath, 'utf-8');
-      const match = content.match(/export const defaultPortfolioData: PortfolioData = ([\s\S]*?);\s*$/);
-      if (match && match[1]) {
-        const data = JSON.parse(match[1]);
-        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-        return res.json(data);
-      }
-      return res.status(404).json({ error: 'Estrutura não encontrada' });
-    } catch (err: any) {
-      return res.status(500).json({ error: err.message });
-    }
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    return res.json(currentPortfolioData);
   });
 
   // Endpoint to save portfolio data directly to the repository file system
@@ -34,9 +26,11 @@ async function startServer() {
         return res.status(400).json({ error: 'Dados inválidos recebidos' });
       }
 
+      currentPortfolioData = newData;
+
       const filePath = path.resolve(process.cwd(), 'src/data/defaultData.ts');
 
-      const fileContent = `import { PortfolioData } from '../types/portfolio';\nimport matheusPortrait from '../assets/images/matheus_portrait_1790445047363.jpg';\n\nexport { matheusPortrait };\n\nexport const defaultPortfolioData: PortfolioData = ${JSON.stringify(
+      const fileContent = `import { PortfolioData } from '../types/portfolio';\n\nexport const defaultPortfolioData: PortfolioData = ${JSON.stringify(
         newData,
         null,
         2
@@ -58,7 +52,10 @@ async function startServer() {
   const isProd = process.env.NODE_ENV === 'production';
   if (!isProd) {
     const vite = await createViteServer({
-      server: { middlewareMode: true },
+      server: {
+        middlewareMode: true,
+        hmr: false,
+      },
       appType: 'spa',
     });
     app.use(vite.middlewares);
@@ -69,9 +66,31 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
+  const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running at http://0.0.0.0:${PORT}`);
   });
+
+  server.on('error', (err: any) => {
+    if (err.code === 'EADDRINUSE') {
+      console.warn(`Port ${PORT} is currently in use, another instance is already serving.`);
+    } else {
+      console.error('Server error:', err);
+    }
+  });
+
+  process.on('SIGTERM', () => {
+    server.close(() => process.exit(0));
+  });
+  process.on('SIGINT', () => {
+    server.close(() => process.exit(0));
+  });
 }
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled Rejection:', reason);
+});
 
 startServer();
