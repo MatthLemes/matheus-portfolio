@@ -26,7 +26,8 @@ import { SkillsSection } from './components/SkillsSection';
 import { ContactSection } from './components/ContactSection';
 import { EditProfileModal } from './components/EditProfileModal';
 import { AdminLoginModal } from './components/AdminLoginModal';
-import { Copy, Check, AlertCircle, X, Sparkles } from 'lucide-react';
+import { FadeInReveal } from './components/FadeInReveal';
+import { Copy, Check, AlertCircle, X, Sparkles, ArrowUp } from 'lucide-react';
 
 const LOCAL_STORAGE_ACTIVE_KEY = 'matheus_portfolio_data_active';
 
@@ -49,6 +50,7 @@ export default function App() {
   });
 
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [showBackToTop, setShowBackToTop] = useState(false);
 
   // Sync with disk via /api/portfolio-data on mount
   useEffect(() => {
@@ -71,6 +73,28 @@ export default function App() {
         // Static environment fallback
       });
   }, []);
+
+  // Monitor scroll position: only reveal button when scrolled past the hero section
+  useEffect(() => {
+    const handleScroll = () => {
+      const heroSection = document.getElementById('inicio');
+      if (heroSection) {
+        const rect = heroSection.getBoundingClientRect();
+        // Visible once the bottom of the hero has passed above the top of the viewport
+        setShowBackToTop(rect.bottom < 50);
+      } else {
+        setShowBackToTop(window.scrollY > 400);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -317,73 +341,110 @@ export default function App() {
         />
 
         {/* 2. Trajetória Profissional (Linha do tempo leve e interativa) */}
-        <ExperienceSection
-          experiences={data.experiences}
-          linkedinUrl={data.links.linkedin}
-        />
+        <FadeInReveal>
+          <ExperienceSection
+            experiences={data.experiences}
+            linkedinUrl={data.links.linkedin}
+          />
+        </FadeInReveal>
 
         {/* 3. Formação Acadêmica (após a linha do tempo, com FGV) */}
-        <EducationSection
-          education={data.education}
-          languages={data.languages}
-        />
+        <FadeInReveal>
+          <EducationSection
+            education={data.education}
+            languages={data.languages}
+          />
+        </FadeInReveal>
 
         {/* 4. Certificações Relevantes (sobe após a formação) */}
-        <CertificationsSection
-          certifications={data.certifications}
-        />
+        <FadeInReveal>
+          <CertificationsSection
+            certifications={data.certifications}
+          />
+        </FadeInReveal>
 
         {/* 5. Projetos & Conquistas (sobe após as certificações) */}
-        <AchievementsSection
-          achievements={data.achievements}
-        />
+        <FadeInReveal>
+          <AchievementsSection
+            achievements={data.achievements}
+          />
+        </FadeInReveal>
 
         {/* 6. Vitrine de Projetos (Behance e incorporações, com modo curador) */}
-        <EmbeddedProjectsGallery
-          projects={data.embeddedProjects}
-          behanceUrl={data.links.behance}
-          onAddProject={handleAddProject}
-          onDeleteProject={handleDeleteProject}
-          onMoveProject={handleMoveProject}
-          isAdmin={isAdmin}
-        />
+        <FadeInReveal>
+          <EmbeddedProjectsGallery
+            projects={data.embeddedProjects}
+            behanceUrl={data.links.behance}
+            onAddProject={handleAddProject}
+            onDeleteProject={handleDeleteProject}
+            onMoveProject={handleMoveProject}
+            isAdmin={isAdmin}
+          />
+        </FadeInReveal>
 
         {/* 7. Destaques do LinkedIn (antes de playlists e poesias) */}
-        <LinkedInHighlightsSection
-          highlights={data.linkedInHighlights || []}
-          linkedinProfileUrl={data.links.linkedin}
-          onAddHighlight={handleAddLinkedInHighlight}
-          onDeleteHighlight={handleDeleteLinkedInHighlight}
-          isAdmin={isAdmin}
-        />
+        <FadeInReveal>
+          <LinkedInHighlightsSection
+            highlights={data.linkedInHighlights || []}
+            linkedinProfileUrl={data.links.linkedin}
+            onAddHighlight={handleAddLinkedInHighlight}
+            onDeleteHighlight={handleDeleteLinkedInHighlight}
+            isAdmin={isAdmin}
+          />
+        </FadeInReveal>
 
         {/* 8. Espaço Criativo: Playlists do Spotify & Poesias com Incorporação Compacta */}
-        <CreativeSpaceSection
-          spotifyPlaylists={data.spotifyPlaylists}
-          poems={data.compactPoems}
-          mediumUrl={data.links.medium || 'https://medium.com/@matheusribeirolemes15'}
-          onAddSpotify={handleAddSpotify}
-          onDeleteSpotify={handleDeleteSpotify}
-          onAddPoem={handleAddPoem}
-          onDeletePoem={handleDeletePoem}
-          isAdmin={isAdmin}
-        />
+        <FadeInReveal>
+          <CreativeSpaceSection
+            spotifyPlaylists={data.spotifyPlaylists}
+            poems={data.compactPoems}
+            mediumUrl={data.links.medium || 'https://medium.com/@matheusribeirolemes15'}
+            onAddSpotify={handleAddSpotify}
+            onDeleteSpotify={handleDeleteSpotify}
+            onAddPoem={handleAddPoem}
+            onDeletePoem={handleDeletePoem}
+            isAdmin={isAdmin}
+          />
+        </FadeInReveal>
 
         {/* 9. Competências & Ferramentas (penúltimo antes do contato) */}
-        <SkillsSection
-          skills={data.skills}
-        />
+        <FadeInReveal>
+          <SkillsSection
+            skills={data.skills}
+          />
+        </FadeInReveal>
 
         {/* 10. Contato Direto: Vamos conversar? */}
-        <ContactSection
-          links={data.links}
-          name={data.name}
-          email={data.email}
-          isAdmin={isAdmin}
-          onOpenLoginModal={() => setIsLoginModalOpen(true)}
-          onLogoutAdmin={handleLogout}
-        />
+        <FadeInReveal>
+          <ContactSection
+            links={data.links}
+            name={data.name}
+            email={data.email}
+            isAdmin={isAdmin}
+            onOpenLoginModal={() => setIsLoginModalOpen(true)}
+            onLogoutAdmin={handleLogout}
+          />
+        </FadeInReveal>
       </main>
+
+      {/* Floating 'Back to Top' Button */}
+      <button
+        onClick={scrollToTop}
+        aria-label="Voltar ao início da página"
+        title="Voltar ao início"
+        className={`fixed z-40 flex items-center gap-1.5 px-3 py-2 text-xs font-mono font-medium rounded-full shadow-md border transition-all duration-300 ease-out group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#141414] focus-visible:ring-offset-2 ${
+          isAdmin
+            ? 'bottom-16 sm:bottom-18 right-4 sm:right-6'
+            : 'bottom-5 sm:bottom-6 right-4 sm:right-6'
+        } ${
+          showBackToTop
+            ? 'opacity-100 translate-y-0 pointer-events-auto bg-[#141414] text-white border-[#2A2A2A] hover:bg-[#262626] hover:shadow-xl hover:-translate-y-0.5'
+            : 'opacity-0 translate-y-3 pointer-events-none bg-[#141414] text-white border-[#2A2A2A]'
+        }`}
+      >
+        <ArrowUp className="w-3.5 h-3.5 transition-transform duration-200 group-hover:-translate-y-0.5 text-white" />
+        <span className="text-[11px] uppercase tracking-wider font-semibold">Topo</span>
+      </button>
 
       {/* Floating Admin Status Bar */}
       {isAdmin && (

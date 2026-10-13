@@ -2,20 +2,34 @@ import express from 'express';
 import { createServer as createViteServer } from 'vite';
 import fs from 'fs';
 import path from 'path';
-import { defaultPortfolioData } from './src/data/defaultData';
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  // Cloud Run sets PORT environment variable (default 8080)
+  // Dev environment uses port 3000
+  const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
-  let currentPortfolioData = defaultPortfolioData;
+  const jsonPath = path.resolve(process.cwd(), 'src/data/portfolioData.json');
+
+  const getPortfolioData = () => {
+    try {
+      if (fs.existsSync(jsonPath)) {
+        return JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
+      }
+    } catch (e) {
+      console.error('Error reading portfolioData.json:', e);
+    }
+    return null;
+  };
 
   app.use(express.json({ limit: '10mb' }));
 
-  // Endpoint to get the freshest portfolio data directly
+  // Endpoint to get freshest portfolio data directly
   app.get('/api/portfolio-data', (_req, res) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    return res.json(currentPortfolioData);
+    const data = getPortfolioData();
+    if (data) return res.json(data);
+    return res.status(404).json({ error: 'Dados não encontrados' });
   });
 
   // Endpoint to save portfolio data directly to the repository file system
@@ -26,22 +40,12 @@ async function startServer() {
         return res.status(400).json({ error: 'Dados inválidos recebidos' });
       }
 
-      currentPortfolioData = newData;
-
-      const filePath = path.resolve(process.cwd(), 'src/data/defaultData.ts');
-
-      const fileContent = `import { PortfolioData } from '../types/portfolio';\n\nexport const defaultPortfolioData: PortfolioData = ${JSON.stringify(
-        newData,
-        null,
-        2
-      )};\n`;
-
-      fs.writeFileSync(filePath, fileContent, 'utf-8');
-      console.log('✅ Portfolio data saved successfully into src/data/defaultData.ts');
+      fs.writeFileSync(jsonPath, JSON.stringify(newData, null, 2), 'utf-8');
+      console.log('✅ Portfolio data saved successfully into src/data/portfolioData.json');
 
       return res.json({
         success: true,
-        message: 'Dados atualizados e salvos com sucesso no código do projeto!',
+        message: 'Dados atualizados e salvos com sucesso!',
       });
     } catch (err: any) {
       console.error('❌ Error saving portfolio to disk:', err);
@@ -67,7 +71,7 @@ async function startServer() {
   }
 
   const server = app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running at http://0.0.0.0:${PORT}`);
+    console.log(`Server running at http://0.0.0.0:${PORT} (NODE_ENV=${process.env.NODE_ENV || 'development'})`);
   });
 
   server.on('error', (err: any) => {
