@@ -26,37 +26,25 @@ export const Navbar: React.FC<NavbarProps> = ({ name, onOpenEditor, primaryActio
           </button>
         </div>
 
-        {/* Desktop Navigation Links */}
-        <nav className="hidden md:flex items-center gap-3 lg:gap-4 xl:gap-5 text-[11px] xl:text-xs font-semibold uppercase tracking-wider text-[#66665E] whitespace-nowrap">
+        {/* Desktop Navigation Links — 6 Chunked Items (Miller's Law) */}
+        <nav className="hidden md:flex items-center gap-4 lg:gap-6 xl:gap-8 text-xs font-semibold uppercase tracking-wider text-[#66665E] whitespace-nowrap">
           <a href="#inicio" className="hover:text-[#1A1A1A] transition-colors whitespace-nowrap">
             Início
           </a>
           <a href="#trajetoria" className="hover:text-[#1A1A1A] transition-colors whitespace-nowrap">
-            Linha do Tempo
+            Trajetória
           </a>
-          <a href="#formacao" className="hover:text-[#1A1A1A] transition-colors whitespace-nowrap">
-            Formação
+          <a href="#formacao" className="hover:text-[#1A1A1A] transition-colors whitespace-nowrap" title="Formação, Certificações & Conquistas">
+            Credenciais
           </a>
-          <a href="#certificacoes" className="hover:text-[#1A1A1A] transition-colors whitespace-nowrap">
-            Certificações
-          </a>
-          <a href="#conquistas" className="hover:text-[#1A1A1A] transition-colors whitespace-nowrap">
-            Conquistas
-          </a>
-          <a href="#projetos" className="hover:text-[#1A1A1A] transition-colors whitespace-nowrap">
+          <a href="#projetos" className="hover:text-[#1A1A1A] transition-colors whitespace-nowrap" title="Projetos no Behance & Destaques do LinkedIn">
             Vitrine
           </a>
-          <a href="#linkedin-destaques" className="hover:text-[#1A1A1A] transition-colors whitespace-nowrap">
-            LinkedIn
-          </a>
-          <a href="#repertorio-criativo" className="hover:text-[#1A1A1A] transition-colors whitespace-nowrap">
-            Música & Poesia
+          <a href="#repertorio-criativo" className="hover:text-[#1A1A1A] transition-colors whitespace-nowrap" title="Playlists do Spotify & Poesias">
+            Espaço Criativo
           </a>
           <a href="#competencias" className="hover:text-[#1A1A1A] transition-colors whitespace-nowrap">
             Competências
-          </a>
-          <a href="#contato" className="hover:text-[#1A1A1A] transition-colors whitespace-nowrap">
-            Contato
           </a>
         </nav>
 
@@ -85,9 +73,9 @@ export const Navbar: React.FC<NavbarProps> = ({ name, onOpenEditor, primaryActio
         </div>
       </div>
 
-      {/* Mobile nav drawer */}
+      {/* Mobile nav drawer — Consolidated 6 Items */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-[#E8E8E2] bg-[#FCFCFB] px-6 py-4 space-y-2 text-sm font-medium text-[#4A4A42]">
+        <div className="md:hidden border-t border-[#E8E8E2] bg-[#FCFCFB] px-6 py-4 space-y-2.5 text-sm font-medium text-[#4A4A42]">
           <a 
             href="#inicio" 
             onClick={() => setMobileMenuOpen(false)}
@@ -100,64 +88,45 @@ export const Navbar: React.FC<NavbarProps> = ({ name, onOpenEditor, primaryActio
             onClick={() => setMobileMenuOpen(false)}
             className="block py-1 hover:text-[#1A1A1A]"
           >
-            Linha do Tempo Profissional
+            Trajetória <span className="text-xs text-[#82827A] font-normal block sm:inline sm:ml-1">— Linha do tempo profissional</span>
           </a>
           <a 
             href="#formacao" 
             onClick={() => setMobileMenuOpen(false)}
             className="block py-1 hover:text-[#1A1A1A]"
           >
-            Formação Acadêmica
-          </a>
-          <a 
-            href="#certificacoes" 
-            onClick={() => setMobileMenuOpen(false)}
-            className="block py-1 hover:text-[#1A1A1A]"
-          >
-            Certificações
-          </a>
-          <a 
-            href="#conquistas" 
-            onClick={() => setMobileMenuOpen(false)}
-            className="block py-1 hover:text-[#1A1A1A]"
-          >
-            Projetos & Conquistas
+            Credenciais <span className="text-xs text-[#82827A] font-normal block sm:inline sm:ml-1">— Formação, certificações e conquistas</span>
           </a>
           <a 
             href="#projetos" 
             onClick={() => setMobileMenuOpen(false)}
             className="block py-1 hover:text-[#1A1A1A]"
           >
-            Vitrine de Projetos (Behance)
-          </a>
-          <a 
-            href="#linkedin-destaques" 
-            onClick={() => setMobileMenuOpen(false)}
-            className="block py-1 hover:text-[#1A1A1A]"
-          >
-            Destaques do LinkedIn
+            Vitrine <span className="text-xs text-[#82827A] font-normal block sm:inline sm:ml-1">— Projetos Behance e destaques</span>
           </a>
           <a 
             href="#repertorio-criativo" 
             onClick={() => setMobileMenuOpen(false)}
             className="block py-1 hover:text-[#1A1A1A]"
           >
-            Música & Poesia
+            Espaço Criativo <span className="text-xs text-[#82827A] font-normal block sm:inline sm:ml-1">— Playlists e poesias</span>
           </a>
           <a 
             href="#competencias" 
             onClick={() => setMobileMenuOpen(false)}
             className="block py-1 hover:text-[#1A1A1A]"
           >
-            Competências & Ferramentas
+            Competências <span className="text-xs text-[#82827A] font-normal block sm:inline sm:ml-1">— Hard skills e ferramentas</span>
           </a>
-          <a 
-            href="#contato" 
-            onClick={() => setMobileMenuOpen(false)}
-            className="block py-1 hover:text-[#1A1A1A]"
-          >
-            Contato
-          </a>
+          <div className="pt-2 border-t border-[#E8E8E2]">
+            <a 
+              href="#contato" 
+              onClick={() => setMobileMenuOpen(false)}
+              className="block py-1 text-[#0A66C2] font-semibold hover:text-[#084e96]"
+            >
+              Vamos Conversar →
+            </a>
+          </div>
         </div>
       )}
     </header>

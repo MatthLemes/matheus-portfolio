@@ -1,6 +1,8 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { Cpu, Target, Palette, Users } from 'lucide-react';
 import { SkillCategory } from '../types/portfolio';
+import { staggerContainer, staggerItem } from '../utils/animationVariants';
 
 interface SkillsSectionProps {
   skills: SkillCategory[];
@@ -46,11 +48,18 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({ skills }) => {
           <span className="text-[10px] text-[#A0A096]">({skills.length} áreas)</span>
         </div>
 
-        {/* 4-column Grid / Mobile Swipe Carousel */}
-        <div className="flex sm:grid overflow-x-auto sm:overflow-x-visible no-scrollbar snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 gap-4 sm:grid-cols-2 lg:grid-cols-4 pb-3 sm:pb-0">
+        {/* 4-column Grid / Mobile Swipe Carousel with Staggered Fade-in */}
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.15 }}
+          className="flex sm:grid overflow-x-auto sm:overflow-x-visible no-scrollbar snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 gap-4 sm:grid-cols-2 lg:grid-cols-4 pb-3 sm:pb-0"
+        >
           {skills.map((category) => (
-            <div
+            <motion.div
               key={category.category}
+              variants={staggerItem}
               className="w-[78vw] sm:w-auto shrink-0 sm:shrink snap-start bg-white border border-[#E2E2D8] rounded-xl p-5 sm:p-6 shadow-xs flex flex-col justify-between"
             >
               <div>
@@ -70,9 +79,9 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({ skills }) => {
                   ))}
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );

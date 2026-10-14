@@ -1,6 +1,8 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { Trophy, Sparkles } from 'lucide-react';
 import { AchievementItem } from '../types/portfolio';
+import { staggerContainer, staggerItem } from '../utils/animationVariants';
 
 interface AchievementsSectionProps {
   achievements: AchievementItem[];
@@ -35,11 +37,18 @@ export const AchievementsSection: React.FC<AchievementsSectionProps> = ({ achiev
           </div>
         )}
 
-        {/* 2-column Grid of Achievements / Mobile Swipe Carousel */}
-        <div className="flex md:grid overflow-x-auto md:overflow-x-visible no-scrollbar snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 gap-4 md:grid-cols-2 pb-3 md:pb-0">
+        {/* 2-column Grid of Achievements / Mobile Swipe Carousel with Staggered Fade-in */}
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.15 }}
+          className="flex md:grid overflow-x-auto md:overflow-x-visible no-scrollbar snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 gap-4 md:grid-cols-2 pb-3 md:pb-0"
+        >
           {achievements.map((item) => (
-            <div
+            <motion.div
               key={item.id}
+              variants={staggerItem}
               className="w-[84vw] sm:w-[340px] md:w-auto shrink-0 md:shrink snap-start bg-white border border-[#E2E2D8] hover:border-[#1A1A1A] rounded-xl p-5 sm:p-6 flex flex-col justify-between transition-colors shadow-xs"
             >
               <div>
@@ -63,10 +72,11 @@ export const AchievementsSection: React.FC<AchievementsSectionProps> = ({ achiev
                   {item.description}
                 </p>
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );
 };
+

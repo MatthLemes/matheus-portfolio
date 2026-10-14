@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Music2, Feather, Plus, ExternalLink, Trash2, ArrowUpRight } from 'lucide-react';
 import { SpotifyEmbedItem, PoetryCompactItem } from '../types/portfolio';
+import { staggerContainer, staggerItem } from '../utils/animationVariants';
 
 interface CreativeSpaceSectionProps {
   spotifyPlaylists: SpotifyEmbedItem[];
@@ -152,14 +154,21 @@ export const CreativeSpaceSection: React.FC<CreativeSpaceSectionProps> = ({
               </div>
             )}
 
-            {/* Spotify List / Mobile Swipe Carousel */}
-            <div className="flex md:flex-col overflow-x-auto md:overflow-x-visible no-scrollbar snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 gap-3 pb-2 md:pb-0 md:space-y-4 md:gap-0">
+            {/* Spotify List / Mobile Swipe Carousel with Staggered Fade-in */}
+            <motion.div
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.15 }}
+              className="flex md:flex-col overflow-x-auto md:overflow-x-visible no-scrollbar snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 gap-3 pb-2 md:pb-0 md:space-y-4 md:gap-0"
+            >
               {spotifyPlaylists.map((item) => {
                 const embedSrc = parseSpotifySrc(item.embedUrlOrCode);
 
                 return (
-                  <div
+                  <motion.div
                     key={item.id}
+                    variants={staggerItem}
                     className="w-[84vw] sm:w-[320px] md:w-auto shrink-0 md:shrink snap-start p-3.5 bg-white border border-[#E2E2D8] rounded-xl hover:border-[#1DB954]/60 transition-colors shadow-xs"
                   >
                     <div className="flex items-center justify-between mb-2">
@@ -210,10 +219,10 @@ export const CreativeSpaceSection: React.FC<CreativeSpaceSectionProps> = ({
                         title={item.title}
                       />
                     </div>
-                  </div>
+                  </motion.div>
                 );
               })}
-            </div>
+            </motion.div>
           </div>
 
           {/* Right Column: Poesias com Incorporação Menor / Compacta */}
@@ -244,11 +253,18 @@ export const CreativeSpaceSection: React.FC<CreativeSpaceSectionProps> = ({
               </div>
             )}
 
-            {/* Compact Poetry Cards / Mobile Swipe Carousel */}
-            <div className="flex md:flex-col overflow-x-auto md:overflow-x-visible no-scrollbar snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 gap-3 pb-2 md:pb-0 md:space-y-3 md:gap-0">
+            {/* Compact Poetry Cards / Mobile Swipe Carousel with Staggered Fade-in */}
+            <motion.div
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.15 }}
+              className="flex md:flex-col overflow-x-auto md:overflow-x-visible no-scrollbar snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 gap-3 pb-2 md:pb-0 md:space-y-3 md:gap-0"
+            >
               {poems.map((poem) => (
-                <div
+                <motion.div
                   key={poem.id}
+                  variants={staggerItem}
                   className="w-[84vw] sm:w-[320px] md:w-auto shrink-0 md:shrink snap-start p-4 bg-white border border-[#E2E2D8] rounded-xl hover:border-[#1A1A1A] transition-colors shadow-xs flex flex-col justify-between"
                 >
                   <div>
@@ -289,9 +305,9 @@ export const CreativeSpaceSection: React.FC<CreativeSpaceSectionProps> = ({
                       <ArrowUpRight className="w-3.5 h-3.5" />
                     </a>
                   </div>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           </div>
         </div>
       </div>

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Plus, ExternalLink, Trash2, Code2, Layers, Check, Settings2, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
 import { EmbeddedProject } from '../types/portfolio';
+import { staggerContainer, cardStaggerItem } from '../utils/animationVariants';
 
 interface EmbeddedProjectsGalleryProps {
   projects: EmbeddedProject[];
@@ -206,11 +208,18 @@ export const EmbeddedProjectsGallery: React.FC<EmbeddedProjectsGalleryProps> = (
           </div>
         )}
 
-        {/* Projects Grid / Mobile Swipe Carousel */}
-        <div className={`flex md:grid overflow-x-auto md:overflow-x-visible no-scrollbar snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 gap-4 sm:gap-6 md:gap-8 ${projects.length > 1 ? 'md:grid-cols-2' : 'max-w-xl mx-auto'} justify-start md:justify-center pb-3 md:pb-0`}>
+        {/* Projects Grid / Mobile Swipe Carousel with Staggered Fade-in */}
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.15 }}
+          className={`flex md:grid overflow-x-auto md:overflow-x-visible no-scrollbar snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 gap-4 sm:gap-6 md:gap-8 ${projects.length > 1 ? 'md:grid-cols-2' : 'max-w-xl mx-auto'} justify-start md:justify-center pb-3 md:pb-0`}
+        >
           {projects.map((project, index) => (
-            <div
+            <motion.div
               key={project.id}
+              variants={cardStaggerItem}
               className="w-[88vw] sm:w-[380px] md:w-auto shrink-0 md:shrink snap-center group bg-white border border-[#E2E2D8] hover:border-[#0057FF]/50 rounded-2xl p-3 sm:p-4 flex flex-col items-center justify-center transition-all shadow-xs relative"
             >
               {curatorMode && (
@@ -249,9 +258,9 @@ export const EmbeddedProjectsGallery: React.FC<EmbeddedProjectsGalleryProps> = (
               <div className="w-full flex justify-center items-center">
                 {renderEmbedContent(project)}
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
 
         {/* Curator Instructions (only visible in curator mode) */}
         {curatorMode && (

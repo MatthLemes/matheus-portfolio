@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { ArrowUpRight, MapPin, Sparkles, ChevronRight } from 'lucide-react';
 import { ExperienceItem } from '../types/portfolio';
+import { staggerContainer, cardStaggerItem } from '../utils/animationVariants';
 
 interface ExperienceSectionProps {
   experiences: ExperienceItem[];
@@ -57,91 +59,102 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
           {/* Subtle horizontal connecting line on desktop */}
           <div className="hidden md:block absolute top-[19px] left-8 right-8 h-0.5 bg-[#E2E2D8] z-0" />
 
-          {/* Cards & Nodes: Horizontal scroll on mobile, 4-column grid on desktop */}
-          <div className="flex md:grid md:grid-cols-4 gap-4 overflow-x-auto pb-4 md:pb-0 snap-x snap-mandatory scrollbar-thin">
+          {/* Cards & Nodes: Horizontal scroll on mobile, 4-column grid on desktop with Staggered Fade-In */}
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.15 }}
+            className="flex md:grid md:grid-cols-4 gap-4 overflow-x-auto pb-4 md:pb-0 snap-x snap-mandatory scrollbar-thin"
+          >
             {chronological.map((exp, index) => {
               const isHovered = hoveredIndex === index;
               const isCurrent = exp.period.includes('Atual');
               const tag = getExperienceTag(exp.id);
 
               return (
-                <a
+                <motion.div
                   key={exp.id}
-                  href={linkedinUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onMouseEnter={() => setHoveredIndex(index)}
-                  onMouseLeave={() => setHoveredIndex(null)}
-                  className="group relative flex-none w-[270px] sm:w-[290px] md:w-auto snap-start block transition-all duration-200"
+                  variants={cardStaggerItem}
+                  className="flex-none w-[270px] sm:w-[290px] md:w-auto snap-start"
                 >
-                  {/* Step header with Node on horizontal axis */}
-                  <div className="flex items-center gap-2 mb-3 relative z-10">
+                  <a
+                    href={linkedinUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onMouseEnter={() => setHoveredIndex(index)}
+                    onMouseLeave={() => setHoveredIndex(null)}
+                    className="group relative block transition-all duration-200"
+                  >
+                    {/* Step header with Node on horizontal axis */}
+                    <div className="flex items-center gap-2 mb-3 relative z-10">
+                      <div
+                        className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-200 border-2 ${
+                          isCurrent
+                            ? 'border-[#0A66C2] bg-[#0A66C2] text-white shadow-xs'
+                            : isHovered
+                            ? 'border-[#0A66C2] bg-white text-[#0A66C2]'
+                            : 'border-[#9E9E94] bg-white text-[#8A8A80]'
+                        }`}
+                      >
+                        <div
+                          className={`w-2 h-2 rounded-full transition-transform ${
+                            isCurrent
+                              ? 'bg-white animate-pulse'
+                              : isHovered
+                              ? 'bg-[#0A66C2] scale-125'
+                              : 'bg-[#9E9E94]'
+                          }`}
+                        />
+                      </div>
+
+                      <div className="flex items-center gap-1.5 font-mono text-[11px] font-semibold uppercase tracking-wider text-[#66665E] group-hover:text-[#0A66C2] transition-colors">
+                        <span>{exp.period}</span>
+                        {isCurrent && (
+                          <span className="text-[10px] px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded font-bold lowercase">
+                            atual
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Compact Card with hover lift */}
                     <div
-                      className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-200 border-2 ${
-                        isCurrent
-                          ? 'border-[#0A66C2] bg-[#0A66C2] text-white shadow-xs'
-                          : isHovered
-                          ? 'border-[#0A66C2] bg-white text-[#0A66C2]'
-                          : 'border-[#9E9E94] bg-white text-[#8A8A80]'
+                      className={`p-3.5 sm:p-4 rounded-xl border transition-all duration-200 h-[195px] flex flex-col justify-between ${
+                        isHovered
+                          ? 'bg-white border-[#0A66C2] shadow-md -translate-y-1'
+                          : 'bg-white/90 border-[#E5E5DC] hover:border-[#BDBDB0] shadow-xs'
                       }`}
                     >
-                      <div
-                        className={`w-2 h-2 rounded-full transition-transform ${
-                          isCurrent
-                            ? 'bg-white animate-pulse'
-                            : isHovered
-                            ? 'bg-[#0A66C2] scale-125'
-                            : 'bg-[#9E9E94]'
-                        }`}
-                      />
-                    </div>
+                      <div>
+                        <div className="flex items-start justify-between gap-1 mb-1">
+                          <h3 className="text-sm sm:text-base font-sans font-semibold text-[#1A1A1A] group-hover:text-[#0A66C2] transition-colors line-clamp-2 leading-snug">
+                            {exp.role}
+                          </h3>
+                          <ArrowUpRight className="w-3.5 h-3.5 shrink-0 text-[#A0A096] group-hover:text-[#0A66C2] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+                        </div>
 
-                    <div className="flex items-center gap-1.5 font-mono text-[11px] font-semibold uppercase tracking-wider text-[#66665E] group-hover:text-[#0A66C2] transition-colors">
-                      <span>{exp.period}</span>
-                      {isCurrent && (
-                        <span className="text-[10px] px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded font-bold lowercase">
-                          atual
-                        </span>
-                      )}
-                    </div>
-                  </div>
+                        <div className="text-xs font-medium text-[#4A4A42] mb-1.5">
+                          {exp.company}
+                        </div>
 
-                  {/* Compact Card with hover lift */}
-                  <div
-                    className={`p-3.5 sm:p-4 rounded-xl border transition-all duration-200 h-[195px] flex flex-col justify-between ${
-                      isHovered
-                        ? 'bg-white border-[#0A66C2] shadow-md -translate-y-1'
-                        : 'bg-white/90 border-[#E5E5DC] hover:border-[#BDBDB0] shadow-xs'
-                    }`}
-                  >
-                    <div>
-                      <div className="flex items-start justify-between gap-1 mb-1">
-                        <h3 className="text-sm sm:text-base font-sans font-semibold text-[#1A1A1A] group-hover:text-[#0A66C2] transition-colors line-clamp-2 leading-snug">
-                          {exp.role}
-                        </h3>
-                        <ArrowUpRight className="w-3.5 h-3.5 shrink-0 text-[#A0A096] group-hover:text-[#0A66C2] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+                        <div className="flex items-center gap-1 text-[11px] text-[#787870] font-mono">
+                          <MapPin className="w-3 h-3 text-[#A0A096] shrink-0" />
+                          <span className="truncate">{exp.location}</span>
+                        </div>
                       </div>
 
-                      <div className="text-xs font-medium text-[#4A4A42] mb-1.5">
-                        {exp.company}
-                      </div>
-
-                      <div className="flex items-center gap-1 text-[11px] text-[#787870] font-mono">
-                        <MapPin className="w-3 h-3 text-[#A0A096] shrink-0" />
-                        <span className="truncate">{exp.location}</span>
+                      {/* Compact Tag footer */}
+                      <div className="pt-2 border-t border-[#F2F2EC] flex items-center gap-1.5 text-[10px] sm:text-[11px] font-mono text-[#5A5A52] bg-[#FAF9F6] p-1.5 rounded">
+                        <Sparkles className="w-3 h-3 text-[#0A66C2] shrink-0" />
+                        <span className="truncate">{tag}</span>
                       </div>
                     </div>
-
-                    {/* Compact Tag footer */}
-                    <div className="pt-2 border-t border-[#F2F2EC] flex items-center gap-1.5 text-[10px] sm:text-[11px] font-mono text-[#5A5A52] bg-[#FAF9F6] p-1.5 rounded">
-                      <Sparkles className="w-3 h-3 text-[#0A66C2] shrink-0" />
-                      <span className="truncate">{tag}</span>
-                    </div>
-                  </div>
-                </a>
+                  </a>
+                </motion.div>
               );
             })}
-          </div>
+          </motion.div>
 
           {/* Mobile scroll hint */}
           <div className="md:hidden flex items-center justify-center gap-1 mt-2 text-[11px] font-mono text-[#8C8C82]">

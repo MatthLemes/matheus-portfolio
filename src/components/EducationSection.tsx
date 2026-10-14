@@ -1,6 +1,8 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { GraduationCap, Globe2 } from 'lucide-react';
 import { EducationItem, LanguageItem } from '../types/portfolio';
+import { staggerContainer, staggerItem } from '../utils/animationVariants';
 
 interface EducationSectionProps {
   education: EducationItem[];
@@ -29,29 +31,43 @@ export const EducationSection: React.FC<EducationSectionProps> = ({
           </div>
 
           {/* Languages pill bar */}
-          <div className="flex flex-wrap items-center gap-3">
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            className="flex flex-wrap items-center gap-3"
+          >
             {languages.map((lang, index) => (
-              <div
+              <motion.div
                 key={index}
+                variants={staggerItem}
                 className="px-3 py-1.5 bg-white border border-[#D5D5CA] rounded-md text-xs font-mono flex items-center gap-1.5 shadow-xs"
               >
                 <Globe2 className="w-3.5 h-3.5 text-[#0A66C2]" />
                 <span className="font-semibold text-[#1A1A1A]">{lang.language}:</span>
                 <span className="text-[#0A66C2]">{lang.proficiency}</span>
                 {lang.score && <span className="text-[#787870] text-[11px]">({lang.score})</span>}
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
 
-        {/* Education Grid (5 items) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        {/* Education Grid with Staggered Fade-in */}
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.15 }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
+        >
           {education.map((item) => {
             const isFGV = item.institution.includes('FGV');
 
             return (
-              <div
+              <motion.div
                 key={item.id}
+                variants={staggerItem}
                 className={`bg-white border rounded-xl p-5 flex flex-col justify-between hover:border-[#1A1A1A] transition-all shadow-xs ${
                   isFGV ? 'border-[#0A66C2]/40 ring-1 ring-[#0A66C2]/10' : 'border-[#E2E2D8]'
                 }`}
@@ -75,10 +91,10 @@ export const EducationSection: React.FC<EducationSectionProps> = ({
                     <span>{item.institution}</span>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             );
           })}
-        </div>
+        </motion.div>
       </div>
     </section>
   );

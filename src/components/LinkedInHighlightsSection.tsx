@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Linkedin, ArrowUpRight, Plus, Trash2, Image, Code2, ExternalLink } from 'lucide-react';
 import { LinkedInHighlight } from '../types/portfolio';
+import { staggerContainer, cardStaggerItem } from '../utils/animationVariants';
 
 interface LinkedInHighlightsSectionProps {
   highlights: LinkedInHighlight[];
@@ -144,14 +146,21 @@ export const LinkedInHighlightsSection: React.FC<LinkedInHighlightsSectionProps>
           </div>
         )}
 
-        {/* Highlights Grid / Mobile Swipe Carousel */}
-        <div className="flex md:grid overflow-x-auto md:overflow-x-visible no-scrollbar snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3 pb-3 md:pb-0">
+        {/* Highlights Grid / Mobile Swipe Carousel with Staggered Fade-in */}
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.15 }}
+          className="flex md:grid overflow-x-auto md:overflow-x-visible no-scrollbar snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3 pb-3 md:pb-0"
+        >
           {highlights.map((item) => {
             const embedSrc = getEmbedIframeSrc(item.embedCode);
 
             return (
-              <div
+              <motion.div
                 key={item.id}
+                variants={cardStaggerItem}
                 className="w-[85vw] sm:w-[340px] md:w-auto shrink-0 md:shrink snap-start bg-white border border-[#E2E2D8] hover:border-[#0A66C2] rounded-xl overflow-hidden flex flex-col justify-between transition-all duration-200 shadow-xs hover:shadow-md group"
               >
                 <div>
@@ -235,10 +244,10 @@ export const LinkedInHighlightsSection: React.FC<LinkedInHighlightsSectionProps>
                     <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                   </a>
                 </div>
-              </div>
+              </motion.div>
             );
           })}
-        </div>
+        </motion.div>
       </div>
 
       {/* Modal: Adicionar / Incorporar Destaque */}

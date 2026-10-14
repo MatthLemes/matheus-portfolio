@@ -1,6 +1,8 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { Award, CheckCircle2 } from 'lucide-react';
 import { CertificationItem } from '../types/portfolio';
+import { staggerContainer, staggerItem } from '../utils/animationVariants';
 
 interface CertificationsSectionProps {
   certifications: CertificationItem[];
@@ -35,11 +37,18 @@ export const CertificationsSection: React.FC<CertificationsSectionProps> = ({ ce
           </div>
         )}
 
-        {/* Certifications: Mobile Swipe Carousel / Desktop Grid */}
-        <div className="flex md:grid overflow-x-auto md:overflow-x-visible no-scrollbar snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 gap-3.5 sm:gap-4 md:grid-cols-2 lg:grid-cols-3 pb-3 md:pb-0">
+        {/* Certifications: Mobile Swipe Carousel / Desktop Grid with Staggered Fade-in */}
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.15 }}
+          className="flex md:grid overflow-x-auto md:overflow-x-visible no-scrollbar snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 gap-3.5 sm:gap-4 md:grid-cols-2 lg:grid-cols-3 pb-3 md:pb-0"
+        >
           {certifications.map((cert, index) => (
-            <div
+            <motion.div
               key={index}
+              variants={staggerItem}
               className="w-[78vw] sm:w-[280px] md:w-auto shrink-0 md:shrink snap-start p-4 bg-white border border-[#E2E2D8] hover:border-[#1A1A1A] rounded-xl transition-all shadow-xs flex flex-col justify-between"
             >
               <div>
@@ -57,9 +66,9 @@ export const CertificationsSection: React.FC<CertificationsSectionProps> = ({ ce
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                 <span>Credencial Verificada</span>
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );
