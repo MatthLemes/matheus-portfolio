@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Circular badge with transparent outer background and clean white interior -->
+  <circle cx="256" cy="256" r="212" fill="#FFFFFF" stroke="#0D0D0D" stroke-width="26"/>
+
+  <!-- Left Ear -->
+  <path d="M 166 232 C 122 232 114 266 128 292 C 142 314 162 310 170 286" 
+        fill="#FFFFFF" stroke="#0D0D0D" stroke-width="14" stroke-linecap="round"/>
+
+  <!-- Right Ear -->
+  <path d="M 346 235 C 388 235 396 268 382 292 C 368 314 350 310 342 286" 
+        fill="#FFFFFF" stroke="#0D0D0D" stroke-width="14" stroke-linecap="round"/>
+
+  <!-- Face / Jaw Contour -->
+  <path d="M 168 266 C 162 335 186 384 234 406 C 248 412 264 412 278 406 C 326 384 350 335 344 266" 
+        fill="#FFFFFF" stroke="#0D0D0D" stroke-width="15" stroke-linecap="round"/>
+
+  <!-- Hair Silhouette -->
+  <path d="M 172 248
+           C 160 200 156 156 192 120
+           C 176 116 164 104 168 90
+           C 172 76 190 84 200 100
+           C 196 82 206 66 220 70
+           C 235 74 240 88 244 102
+           C 272 65 336 66 380 102
+           C 420 135 432 178 440 210
+           C 412 188 386 182 366 204
+           C 344 182 308 164 274 184
+           C 254 196 228 190 212 168
+           C 198 194 182 224 172 248 Z"
+        fill="#0D0D0D"/>
+
+  <!-- Left Eyebrow -->
+  <path d="M 184 236 C 198 210 230 208 250 226" 
+        fill="none" stroke="#0D0D0D" stroke-width="19" stroke-linecap="round"/>
+
+  <!-- Right Eyebrow -->
+  <path d="M 288 226 C 308 208 340 210 354 236" 
+        fill="none" stroke="#0D0D0D" stroke-width="19" stroke-linecap="round"/>
+
+  <!-- Left Eye -->
+  <ellipse cx="216" cy="266" rx="28" ry="24" fill="#FFFFFF" stroke="#0D0D0D" stroke-width="13"/>
+  <ellipse cx="204" cy="266" rx="14" ry="20" fill="#0D0D0D"/>
+
+  <!-- Right Eye -->
+  <ellipse cx="318" cy="263" rx="28" ry="24" fill="#FFFFFF" stroke="#0D0D0D" stroke-width="13"/>
+  <ellipse cx="306" cy="263" rx="14" ry="20" fill="#0D0D0D"/>
+
+  <!-- Nose -->
+  <path d="M 268 258 L 268 284 Q 270 294 282 288" 
+        fill="none" stroke="#0D0D0D" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Wavy Mustache -->
+  <path d="M 204 326 Q 216 316 228 326 Q 240 336 252 326" 
+        fill="none" stroke="#0D0D0D" stroke-width="15" stroke-linecap="round"/>
+  <path d="M 276 329 Q 288 319 300 329 Q 312 339 324 329" 
+        fill="none" stroke="#0D0D0D" stroke-width="15" stroke-linecap="round"/>
+
+  <!-- Open Smiling Mouth -->
+  <path d="M 204 348 Q 242 352 276 350 Q 268 392 238 388 Q 212 384 204 348 Z" 
+        fill="#0D0D0D" stroke="#0D0D0D" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M 212 353 Q 242 356 268 354 Q 256 376 220 372 Z" fill="#FFFFFF"/>
+
+  <!-- Goatee Beard -->
+  <path d="M 242 404 L 246 422 L 250 404 L 255 423 L 260 404 L 265 422 L 270 404 L 274 422 L 278 404" 
+        fill="none" stroke="#0D0D0D" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
