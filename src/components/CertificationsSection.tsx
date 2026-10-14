@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Award, CheckCircle2 } from 'lucide-react';
+import { Award, CheckCircle2, ArrowUpRight } from 'lucide-react';
 import { CertificationItem } from '../types/portfolio';
 import { staggerContainer, staggerItem } from '../utils/animationVariants';
 
@@ -49,23 +49,34 @@ export const CertificationsSection: React.FC<CertificationsSectionProps> = ({ ce
             <motion.div
               key={index}
               variants={staggerItem}
-              className="w-[78vw] sm:w-[280px] md:w-auto shrink-0 md:shrink snap-start p-4 bg-white border border-[#E2E2D8] hover:border-[#1A1A1A] rounded-xl transition-all shadow-xs flex flex-col justify-between"
+              className="w-[78vw] sm:w-[280px] md:w-auto shrink-0 md:shrink snap-start"
             >
-              <div>
-                <div className="flex items-center justify-between text-xs font-mono text-[#828279] mb-2">
-                  <span className="font-semibold text-[#0A66C2]">{cert.issuer}</span>
-                  <span>{cert.year}</span>
+              <a
+                href={`https://www.linkedin.com/in/matheus-lemes-designer/details/certifications/`}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={`Ver credencial ${cert.name} no LinkedIn`}
+                className="p-4 bg-white border border-[#E2E2D8] hover:border-[#0A66C2] rounded-xl transition-all shadow-xs hover:shadow-md flex flex-col justify-between h-full group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A66C2]"
+              >
+                <div>
+                  <div className="flex items-center justify-between text-xs font-mono text-[#828279] mb-2">
+                    <span className="font-semibold text-[#0A66C2]">{cert.issuer}</span>
+                    <span className="flex items-center gap-1">
+                      <span>{cert.year}</span>
+                      <ArrowUpRight className="w-3.5 h-3.5 text-[#B0B0A4] group-hover:text-[#0A66C2] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                    </span>
+                  </div>
+
+                  <h3 className="text-sm font-semibold text-[#1A1A1A] group-hover:text-[#0A66C2] transition-colors leading-snug">
+                    {cert.name}
+                  </h3>
                 </div>
 
-                <h3 className="text-sm font-semibold text-[#1A1A1A] leading-snug">
-                  {cert.name}
-                </h3>
-              </div>
-
-              <div className="flex items-center gap-1.5 mt-3 pt-2 border-t border-[#F4F4EE] text-[11px] font-mono text-[#7D7D75]">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                <span>Credencial Verificada</span>
-              </div>
+                <div className="flex items-center gap-1.5 mt-3 pt-2 border-t border-[#F4F4EE] text-[11px] font-mono text-[#7D7D75]">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span className="group-hover:text-[#1A1A1A] transition-colors">Credencial Verificada</span>
+                </div>
+              </a>
             </motion.div>
           ))}
         </motion.div>

@@ -66,14 +66,53 @@ export const Hero: React.FC<HeroProps> = ({
               <p>{about}</p>
             </div>
 
-            {/* Direct Channel Highlight Cards */}
+            {/* Serial Position Effect (Primacy): Quick Key Impact Metrics for 5-Second Scan */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
+              <div className="p-3 bg-white border border-[#E5E5DC] rounded-lg shadow-2xs hover:border-[#0A66C2] transition-colors">
+                <div className="text-xl sm:text-2xl font-bold font-sans text-[#0A66C2] tracking-tight">
+                  +40%
+                </div>
+                <div className="text-[11px] font-mono uppercase tracking-wider text-[#73736C] font-semibold mt-0.5">
+                  CTR no RD Station
+                </div>
+              </div>
+
+              <div className="p-3 bg-white border border-[#E5E5DC] rounded-lg shadow-2xs hover:border-[#0A66C2] transition-colors">
+                <div className="text-xl sm:text-2xl font-bold font-sans text-[#141414] tracking-tight">
+                  FGV
+                </div>
+                <div className="text-[11px] font-mono uppercase tracking-wider text-[#73736C] font-semibold mt-0.5">
+                  Gestão Comercial
+                </div>
+              </div>
+
+              <div className="p-3 bg-white border border-[#E5E5DC] rounded-lg shadow-2xs hover:border-[#0A66C2] transition-colors">
+                <div className="text-xl sm:text-2xl font-bold font-sans text-[#141414] tracking-tight">
+                  4 Globais
+                </div>
+                <div className="text-[11px] font-mono uppercase tracking-wider text-[#73736C] font-semibold mt-0.5 truncate" title="Harvard · Google · IBM · Vanderbilt">
+                  Harvard & Google
+                </div>
+              </div>
+
+              <div className="p-3 bg-white border border-[#E5E5DC] rounded-lg shadow-2xs hover:border-[#0A66C2] transition-colors">
+                <div className="text-xl sm:text-2xl font-bold font-sans text-[#141414] tracking-tight">
+                  700+
+                </div>
+                <div className="text-[11px] font-mono uppercase tracking-wider text-[#73736C] font-semibold mt-0.5">
+                  Especialistas
+                </div>
+              </div>
+            </div>
+
+            {/* Direct Channel Highlight Cards — Fitts's Law Optimized Targets */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
               {/* LinkedIn */}
               <a
                 href={links.linkedin}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group p-4 bg-white border border-[#E5E5DC] hover:border-[#0A66C2] rounded transition-all shadow-xs flex flex-col justify-between"
+                className="group p-4 bg-white border border-[#E5E5DC] hover:border-[#0A66C2] rounded-lg transition-all shadow-xs hover:shadow-md flex flex-col justify-between min-h-[115px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A66C2]"
               >
                 <div>
                   <div className="flex items-center justify-between text-xs font-mono text-[#0A66C2] font-semibold mb-1">
@@ -94,7 +133,7 @@ export const Hero: React.FC<HeroProps> = ({
                 href={links.behance}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group p-4 bg-white border border-[#E5E5DC] hover:border-[#0057FF] rounded transition-all shadow-xs flex flex-col justify-between"
+                className="group p-4 bg-white border border-[#E5E5DC] hover:border-[#0057FF] rounded-lg transition-all shadow-xs hover:shadow-md flex flex-col justify-between min-h-[115px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0057FF]"
               >
                 <div>
                   <div className="flex items-center justify-between text-xs font-mono text-[#0057FF] font-semibold mb-1">
@@ -110,32 +149,34 @@ export const Hero: React.FC<HeroProps> = ({
                 </div>
               </a>
 
-              {/* Contato Rápido / WhatsApp / Email */}
-              <div className="p-4 bg-white border border-[#E5E5DC] rounded shadow-xs flex flex-col justify-between">
+              {/* Contato Rápido com Copiar E-mail (Fitts's Law Target) */}
+              <div
+                onClick={() => handleCopy(email, 'email')}
+                className="group p-4 bg-white border border-[#E5E5DC] hover:border-[#0A66C2] rounded-lg shadow-xs hover:shadow-md flex flex-col justify-between min-h-[115px] cursor-pointer transition-all"
+                title="Clique em qualquer lugar deste card para copiar o e-mail"
+              >
                 <div>
                   <div className="flex items-center justify-between text-xs font-mono text-[#1A1A1A] font-semibold mb-1">
                     <span>CONTATO</span>
-                    <Mail className="w-3.5 h-3.5 text-[#73736C]" />
+                    <Mail className="w-3.5 h-3.5 text-[#73736C] group-hover:text-[#0A66C2] transition-colors" />
                   </div>
                   <div className="text-xs font-medium text-[#1A1A1A] truncate">
                     {email}
                   </div>
-                  <button
-                    onClick={() => handleCopy(email, 'email')}
-                    className="mt-2 text-xs font-mono text-[#0A66C2] hover:underline flex items-center gap-1"
-                  >
-                    {copiedText === 'email' ? (
-                      <>
-                        <Check className="w-3 h-3 text-emerald-600" />
-                        <span className="text-emerald-700">E-mail copiado!</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-3 h-3" />
-                        <span>Copiar e-mail</span>
-                      </>
-                    )}
-                  </button>
+                </div>
+
+                <div className="mt-2 text-xs font-mono text-[#0A66C2] font-medium flex items-center gap-1.5 pt-1">
+                  {copiedText === 'email' ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span className="text-emerald-700 font-semibold">E-mail copiado!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5 shrink-0" />
+                      <span className="group-hover:underline">Clique para copiar</span>
+                    </>
+                  )}
                 </div>
               </div>
             </div>

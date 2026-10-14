@@ -48,33 +48,56 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
           {/* Left Column: Direct Contact & Channels */}
           <div className="lg:col-span-5 space-y-6">
             <div>
-              <div className="text-xs font-mono uppercase tracking-widest text-[#7D7D75] mb-1.5 font-semibold">
+              <div className="text-xs font-mono uppercase tracking-widest text-[#7D7D75] mb-2 font-semibold">
                 09. Contato Direto
+              </div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-full text-xs font-mono font-medium mb-3">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span>Disponível para oportunidades & novos desafios</span>
               </div>
               <h2 className="text-3xl sm:text-4xl font-bold font-sans text-[#141414] tracking-tight">
                 Vamos conversar?
               </h2>
               <p className="text-sm sm:text-base text-[#57574F] mt-3 leading-relaxed">
-                Estou disponível para oportunidades em Marketing, CRM, Automação, Conteúdo e projetos de Design. Fique à vontade para entrar em contato.
+                Estou pronto para agregar com visão analítica e criativa em Marketing, CRM, Automação, Conteúdo Estratégico e Design. Fique à vontade para mandar uma mensagem ou conectar-se.
               </p>
             </div>
 
-            {/* Email Card */}
-            <div className="p-4 bg-white border border-[#E2E2D8] rounded space-y-2 shadow-xs">
-              <div className="text-xs font-mono uppercase text-[#88887E]">
-                E-mail Profissional
+            {/* Email Card with Fitts's Law click target */}
+            <div
+              onClick={copyEmail}
+              className="p-4 bg-white border border-[#E2E2D8] hover:border-[#0A66C2] rounded-xl space-y-2 shadow-xs hover:shadow-md cursor-pointer transition-all group"
+              title="Clique em qualquer lugar deste cartão para copiar o e-mail"
+            >
+              <div className="flex items-center justify-between text-xs font-mono text-[#88887E]">
+                <span>E-MAIL PROFISSIONAL</span>
+                <span className="text-[11px] text-[#0A66C2] font-medium group-hover:underline">
+                  {copiedEmail ? 'Copiado!' : 'Clique para copiar'}
+                </span>
               </div>
-              <div className="flex items-center justify-between gap-2">
-                <span className="font-mono text-sm text-[#1A1A1A] font-medium truncate">
+              <div className="flex items-center justify-between gap-2 pt-0.5">
+                <span className="font-mono text-sm text-[#1A1A1A] font-semibold truncate">
                   {email}
                 </span>
-                <button
-                  onClick={copyEmail}
-                  className="shrink-0 p-1.5 text-xs text-[#4A4A42] hover:text-[#1A1A1A] bg-[#F4F4EE] rounded transition-colors flex items-center gap-1"
+                <div
+                  className={`shrink-0 px-3 py-1.5 text-xs rounded-md transition-all flex items-center gap-1.5 font-medium ${
+                    copiedEmail
+                      ? 'bg-emerald-100 text-emerald-800'
+                      : 'bg-[#0A66C2]/10 text-[#0A66C2] group-hover:bg-[#0A66C2] group-hover:text-white'
+                  }`}
                 >
-                  {copiedEmail ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                  <span>{copiedEmail ? 'Copiado' : 'Copiar'}</span>
-                </button>
+                  {copiedEmail ? (
+                    <>
+                      <Check className="w-3.5 h-3.5" />
+                      <span>Copiado!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5" />
+                      <span>Copiar</span>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
 

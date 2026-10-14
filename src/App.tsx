@@ -27,6 +27,7 @@ import { ContactSection } from './components/ContactSection';
 import { EditProfileModal } from './components/EditProfileModal';
 import { AdminLoginModal } from './components/AdminLoginModal';
 import { FadeInReveal } from './components/FadeInReveal';
+import { ScrollProgressBar } from './components/ScrollProgressBar';
 import { Copy, Check, AlertCircle, X, Sparkles, ArrowUp } from 'lucide-react';
 
 const LOCAL_STORAGE_ACTIVE_KEY = 'matheus_portfolio_data_active';
@@ -317,6 +318,9 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* Global Scroll Progress Bar (Zeigarnik Effect / Goal-Gradient) */}
+      <ScrollProgressBar />
 
       {/* 3-Zone Top Navigation Contract */}
       <Navbar
