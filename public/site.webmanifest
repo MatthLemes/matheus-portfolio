@@ -1,0 +1,21 @@
+{
+  "name": "Matheus Lemes — Portfólio & Currículo",
+  "short_name": "Matheus Lemes",
+  "description": "Portfólio e currículo profissional de Matheus Lemes. Analista de Marketing, CRM, Automação, Conteúdo e Design.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FCFCFB",
+  "theme_color": "#141414",
+  "icons": [
+    {
+      "src": "/favicon-192x192.png?v=3",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-512x512.png?v=3",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
