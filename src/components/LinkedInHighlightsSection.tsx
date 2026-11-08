@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Linkedin, ArrowUpRight, Plus, Trash2, Image, Code2, ExternalLink } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Linkedin, ArrowUpRight, Plus, Trash2, Image, Code2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react';
 import { LinkedInHighlight } from '../types/portfolio';
 import { staggerContainer, cardStaggerItem } from '../utils/animationVariants';
 
@@ -9,50 +9,122 @@ interface LinkedInHighlightsSectionProps {
   linkedinProfileUrl: string;
   onAddHighlight: (highlight: Omit<LinkedInHighlight, 'id'>) => void;
   onDeleteHighlight: (id: string) => void;
+  onMoveHighlight?: (id: string, direction: 'prev' | 'next') => void;
   isAdmin?: boolean;
 }
+
+export type FourTabCategory =
+  | 'Todas as Publicações'
+  | 'Credenciais & Carreira'
+  | 'Palestras & Histórias'
+  | 'Artigos & Insights';
 
 export const LinkedInHighlightsSection: React.FC<LinkedInHighlightsSectionProps> = ({
   highlights,
   linkedinProfileUrl,
   onAddHighlight,
   onDeleteHighlight,
+  onMoveHighlight,
   isAdmin = false,
 }) => {
+  const [activeTab, setActiveTab] = useState<FourTabCategory>('Todas as Publicações');
+  const [showAllPosts, setShowAllPosts] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [snippet, setSnippet] = useState('');
   const [url, setUrl] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [embedCode, setEmbedCode] = useState('');
-  const [tag, setTag] = useState('Conquista & Carreira');
+  const [categoryChoice, setCategoryChoice] = useState<FourTabCategory>('Credenciais & Carreira');
   const [date, setDate] = useState('2026');
 
-  // Quick preset thumbnails for convenient preview selection
-  const imagePresets = [
-    {
-      label: 'Conferência / Liderança',
-      url: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&auto=format&fit=crop&q=80',
-    },
-    {
-      label: 'Inteligência Artificial',
-      url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80',
-    },
-    {
-      label: 'CRM & Métricas',
-      url: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&auto=format&fit=crop&q=80',
-    },
-    {
-      label: 'Design & Criatividade',
-      url: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=600&auto=format&fit=crop&q=80',
-    },
-  ];
+  // Spotlight mouse tracking state per card
+  const [hoveredCardId, setHoveredCardId] = useState<string | null>(null);
+  const [cardMousePos, setCardMousePos] = useState<{ [key: string]: { x: number; y: number } }>({});
+
+  const handleCardMouseMove = (id: string, e: React.MouseEvent<HTMLElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setCardMousePos((prev) => ({
+      ...prev,
+      [id]: {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      },
+    }));
+  };
+
+  // 4 Consolidated Categories Helper
+  const getItemCategory = (item: LinkedInHighlight): FourTabCategory => {
+    const text = `${item.title} ${item.snippet || ''} ${item.tag || ''}`.toLowerCase();
+
+    if (
+      text.includes('certifica') ||
+      text.includes('harvard') ||
+      text.includes('google') ||
+      text.includes('credencial') ||
+      text.includes('carreira') ||
+      text.includes('conferência') ||
+      text.includes('na prática') ||
+      text.includes('bolsista')
+    ) {
+      return 'Credenciais & Carreira';
+    }
+
+    if (
+      text.includes('palestra') ||
+      text.includes('jovens') ||
+      text.includes('história') ||
+      text.includes('trajetória') ||
+      text.includes('moldou') ||
+      text.includes('superação') ||
+      text.includes('painel') ||
+      text.includes('talk')
+    ) {
+      return 'Palestras & Histórias';
+    }
+
+    return 'Artigos & Insights';
+  };
+
+  // 4 Tabs with dynamic counters
+  const tabs = useMemo<{ id: FourTabCategory; label: string; count: number }[]>(() => {
+    const allCount = highlights.length;
+    const credentialsCount = highlights.filter(
+      (h) => getItemCategory(h) === 'Credenciais & Carreira'
+    ).length;
+    const talksStoriesCount = highlights.filter(
+      (h) => getItemCategory(h) === 'Palestras & Histórias'
+    ).length;
+    const articlesCount = highlights.filter(
+      (h) => getItemCategory(h) === 'Artigos & Insights'
+    ).length;
+
+    return [
+      { id: 'Todas as Publicações', label: 'Todas as Publicações', count: allCount },
+      { id: 'Credenciais & Carreira', label: 'Credenciais & Carreira', count: credentialsCount },
+      { id: 'Palestras & Histórias', label: 'Palestras & Histórias', count: talksStoriesCount },
+      { id: 'Artigos & Insights', label: 'Artigos & Insights', count: articlesCount },
+    ];
+  }, [highlights]);
+
+  // Filtered highlights based on active tab
+  const filteredHighlights = useMemo(() => {
+    if (activeTab === 'Todas as Publicações') return highlights;
+    return highlights.filter((h) => getItemCategory(h) === activeTab);
+  }, [highlights, activeTab]);
+
+  // Paginated highlights (6 initial on 'Todas', with 'Carregar Mais')
+  const displayedHighlights = useMemo(() => {
+    if (activeTab === 'Todas as Publicações') {
+      return showAllPosts ? filteredHighlights : filteredHighlights.slice(0, 6);
+    }
+    return filteredHighlights;
+  }, [filteredHighlights, activeTab, showAllPosts]);
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title) return;
 
-    // Check if embed code contains an iframe src
     let finalUrl = url;
     if (!finalUrl && embedCode) {
       const match = embedCode.match(/src=["'](.*?)["']/);
@@ -65,8 +137,8 @@ export const LinkedInHighlightsSection: React.FC<LinkedInHighlightsSectionProps>
       url: finalUrl || linkedinProfileUrl,
       imageUrl: imageUrl.trim() || undefined,
       embedCode: embedCode.trim() || undefined,
-      tag: tag || 'Destaque',
-      date: date || 'Recente',
+      tag: categoryChoice,
+      date: date || '2026',
     });
 
     setTitle('');
@@ -74,12 +146,9 @@ export const LinkedInHighlightsSection: React.FC<LinkedInHighlightsSectionProps>
     setUrl('');
     setImageUrl('');
     setEmbedCode('');
-    setTag('Conquista & Carreira');
-    setDate('2026');
     setIsModalOpen(false);
   };
 
-  // Helper to safely extract iframe src from embedCode
   const getEmbedIframeSrc = (code?: string): string | null => {
     if (!code) return null;
     const trimmed = code.trim();
@@ -87,38 +156,36 @@ export const LinkedInHighlightsSection: React.FC<LinkedInHighlightsSectionProps>
       const match = trimmed.match(/src=["'](.*?)["']/);
       return match ? match[1] : null;
     }
-    if (trimmed.startsWith('http')) {
-      return trimmed;
-    }
+    if (trimmed.startsWith('http')) return trimmed;
     return null;
   };
 
   return (
-    <section id="linkedin-destaques" className="py-16 md:py-20 border-b border-[#EAEAE2] bg-[#FAF9F6]">
+    <section id="linkedin-destaques" className="py-16 md:py-20 border-b border-[#E8E6DF] dark:border-[#2E2E2A] bg-[#FAF9F5] dark:bg-[#121211] transition-colors">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
           <div>
-            <div className="text-xs font-mono uppercase tracking-widest text-[#0A66C2] mb-1.5 font-semibold flex items-center gap-1.5">
+            <div className="text-xs font-mono uppercase tracking-widest text-[#2563EB] dark:text-[#3B82F6] mb-1.5 font-semibold flex items-center gap-1.5">
               <Linkedin className="w-3.5 h-3.5" />
               <span>06. Publicações & Artigos</span>
             </div>
-            <h2 className="text-3xl sm:text-4xl font-bold font-sans text-[#141414] tracking-tight">
+            <h2 className="text-3xl sm:text-4xl font-bold font-sans text-[#141414] dark:text-[#F5F5F0] tracking-tight">
               Destaques do LinkedIn
             </h2>
-            <p className="text-xs sm:text-sm text-[#57574F] mt-2 max-w-2xl">
-              Postagens principais, artigos, miniaturas e registros visuais das maiores conquistas no LinkedIn.
+            <p className="text-xs sm:text-sm text-[#57574F] dark:text-[#A8A89E] mt-2 max-w-2xl">
+              Postagens principais, conquistas profissionais, palestras e artigos organizados em 4 categorias essenciais.
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 shrink-0">
             {isAdmin && (
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-[#0A66C2] hover:bg-[#084e96] rounded transition-colors shadow-xs"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] dark:bg-[#3B82F6] dark:hover:bg-[#2563EB] rounded-lg transition-colors shadow-xs"
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>Adicionar / Incorporar</span>
+                <span>Adicionar Destaque</span>
               </button>
             )}
 
@@ -126,145 +193,237 @@ export const LinkedInHighlightsSection: React.FC<LinkedInHighlightsSectionProps>
               href={linkedinProfileUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#1A1A1A] bg-white border border-[#D5D5CA] hover:border-[#0A66C2] transition-colors rounded"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-mono font-medium text-[#181816] dark:text-[#F5F5F0] bg-white dark:bg-[#1C1C1A] border border-[#E8E6DF] dark:border-[#2E2E2A] hover:border-[#2563EB] dark:hover:border-[#3B82F6] transition-colors rounded-lg shadow-2xs"
             >
               <span>Feed do LinkedIn</span>
-              <ArrowUpRight className="w-3.5 h-3.5 text-[#0A66C2]" />
+              <ArrowUpRight className="w-3.5 h-3.5 text-[#2563EB] dark:text-[#3B82F6]" />
             </a>
           </div>
         </div>
 
-        {/* Mobile Swipe Hint */}
-        {highlights.length > 1 && (
-          <div className="md:hidden flex items-center justify-between text-[11px] font-mono text-[#7D7D75] mb-2 px-1">
-            <span className="flex items-center gap-1.5">
-              <span>←</span>
-              <span>Deslize para ver mais artigos</span>
-              <span>→</span>
-            </span>
-            <span className="text-[10px] text-[#A0A096]">({highlights.length} artigos)</span>
+        {/* 4 Clean Segmented Tabs with Dynamic Counters */}
+        <div className="mb-8 overflow-x-auto no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
+          <div className="inline-flex items-center gap-1.5 p-1 bg-[#F4F3EE] dark:bg-[#1C1C1A] border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-xl text-xs font-mono shadow-2xs">
+            {tabs.map((tab) => {
+              const isActive = activeTab === tab.id;
+
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    setActiveTab(tab.id);
+                    setShowAllPosts(false);
+                  }}
+                  className={`relative px-3.5 py-2 rounded-lg transition-all duration-150 flex items-center gap-2 whitespace-nowrap font-medium ${
+                    isActive
+                      ? 'bg-white dark:bg-[#242422] text-[#2563EB] dark:text-[#3B82F6] shadow-2xs font-semibold'
+                      : 'text-[#57574F] dark:text-[#A8A89E] hover:text-[#181816] dark:hover:text-white'
+                  }`}
+                >
+                  <span>{tab.label}</span>
+                  <span
+                    className={`text-[10px] tabular-nums font-mono px-1.5 py-0.5 rounded ${
+                      isActive
+                        ? 'bg-[#2563EB]/10 dark:bg-[#3B82F6]/20 text-[#2563EB] dark:text-[#3B82F6]'
+                        : 'bg-black/5 dark:bg-white/10 text-[#73736C] dark:text-[#A8A89E]'
+                    }`}
+                  >
+                    {tab.count}
+                  </span>
+                </button>
+              );
+            })}
           </div>
-        )}
+        </div>
 
-        {/* Highlights Grid / Mobile Swipe Carousel with Staggered Fade-in */}
-        <motion.div
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.15 }}
-          className="flex md:grid overflow-x-auto md:overflow-x-visible no-scrollbar snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3 pb-3 md:pb-0"
-        >
-          {highlights.map((item) => {
-            const embedSrc = getEmbedIframeSrc(item.embedCode);
+        {/* Highlights Grid with Mouse Spotlight Effect */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab + (showAllPosts ? '-expanded' : '')}
+            variants={staggerContainer}
+            initial="hidden"
+            animate="visible"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6"
+          >
+            {displayedHighlights.length === 0 ? (
+              <div className="col-span-full py-12 text-center text-xs font-mono text-[#73736C] dark:text-[#A8A89E] bg-white dark:bg-[#1C1C1A] border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-xl">
+                Nenhuma publicação encontrada para esta categoria ainda.
+              </div>
+            ) : (
+              displayedHighlights.map((item, index) => {
+                const embedSrc = getEmbedIframeSrc(item.embedCode);
+                const category = getItemCategory(item);
+                const isHovered = hoveredCardId === item.id;
+                const mousePos = cardMousePos[item.id] || { x: 0, y: 0 };
 
-            return (
-              <motion.div
-                key={item.id}
-                variants={cardStaggerItem}
-                className="w-[85vw] sm:w-[340px] md:w-auto shrink-0 md:shrink snap-start bg-white border border-[#E2E2D8] hover:border-[#0A66C2] rounded-xl overflow-hidden flex flex-col justify-between transition-all duration-200 shadow-xs hover:shadow-md group"
-              >
-                <div>
-                  {/* Clean Non-Squished Preview Image or Natural Embed without inner scroll */}
-                  {embedSrc ? (
-                    <div className="w-full bg-[#FAF9F6] border-b border-[#EAEAE0] overflow-hidden flex justify-center items-center">
-                      <iframe
-                        src={embedSrc}
-                        className="w-full border-0 block"
-                        style={{ height: '520px', minHeight: '480px' }}
-                        title={item.title}
-                        allowFullScreen
-                        scrolling="no"
-                      />
-                    </div>
-                  ) : item.imageUrl ? (
-                    <div className="relative w-full aspect-16/9 bg-[#F4F4EE] overflow-hidden border-b border-[#EAEAE0]">
-                      <img
-                        src={item.imageUrl}
-                        alt={item.title}
-                        loading="lazy"
-                        className="w-full h-full object-cover object-center group-hover:scale-102 transition-transform duration-300"
-                      />
-                      <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent opacity-60" />
-                      <span className="absolute bottom-2.5 left-3 text-[10px] font-mono font-semibold text-white bg-black/75 backdrop-blur-xs px-2.5 py-0.5 rounded shadow-xs">
-                        {item.tag || 'LinkedIn'}
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="w-full aspect-16/9 bg-linear-to-r from-[#0A66C2]/10 to-[#0A66C2]/5 flex items-center justify-center border-b border-[#EAEAE0]">
-                      <Linkedin className="w-10 h-10 text-[#0A66C2]/40" />
-                    </div>
-                  )}
+                return (
+                  <motion.article
+                    key={item.id}
+                    variants={cardStaggerItem}
+                    onMouseEnter={() => setHoveredCardId(item.id)}
+                    onMouseLeave={() => setHoveredCardId(null)}
+                    onMouseMove={(e) => handleCardMouseMove(item.id, e)}
+                    className="magnetic-card relative bg-white dark:bg-[#1C1C1A] border border-[#E8E6DF] dark:border-[#2E2E2A] hover:border-[#2563EB] dark:hover:border-[#3B82F6] rounded-xl overflow-hidden flex flex-col justify-between shadow-2xs hover:shadow-md transition-all group"
+                  >
+                    {/* Mouse Spotlight radial gradient */}
+                    <div
+                      className="pointer-events-none absolute -inset-px transition-opacity duration-200 z-1"
+                      style={{
+                        opacity: isHovered ? 1 : 0,
+                        background: `radial-gradient(420px circle at ${mousePos.x}px ${mousePos.y}px, rgba(37, 99, 235, 0.08), transparent 70%)`,
+                      }}
+                      aria-hidden="true"
+                    />
 
-                  {/* Content Body */}
-                  <div className="p-4 sm:p-5">
-                    <div className="flex items-center justify-between text-xs font-mono text-[#8C8C80] mb-2">
-                      {!item.imageUrl && !embedSrc && (
-                        <span className="text-[#0A66C2] font-semibold bg-[#0A66C2]/10 px-2 py-0.5 rounded text-[11px]">
-                          {item.tag || 'LinkedIn'}
-                        </span>
-                      )}
-                      <span className="text-[11px]">{item.date}</span>
-                      {isAdmin && (
+                    {/* Admin Reorder & Delete Controls */}
+                    {isAdmin && (
+                      <div className="absolute top-2.5 right-2.5 z-20 flex items-center gap-1 bg-white/95 dark:bg-[#1C1C1A]/95 backdrop-blur-xs p-1 rounded-full border border-[#E8E6DF] dark:border-[#2E2E2A] shadow-xs">
+                        {onMoveHighlight && (
+                          <>
+                            <button
+                              onClick={() => onMoveHighlight(item.id, 'prev')}
+                              disabled={index === 0}
+                              title="Mover para a esquerda"
+                              className="p-1 text-[#73736C] dark:text-[#A8A89E] hover:text-[#2563EB] dark:hover:text-[#3B82F6] disabled:opacity-30 rounded-full transition-colors"
+                            >
+                              <ChevronLeft className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => onMoveHighlight(item.id, 'next')}
+                              disabled={index === highlights.length - 1}
+                              title="Mover para a direita"
+                              className="p-1 text-[#73736C] dark:text-[#A8A89E] hover:text-[#2563EB] dark:hover:text-[#3B82F6] disabled:opacity-30 rounded-full transition-colors"
+                            >
+                              <ChevronRight className="w-3.5 h-3.5" />
+                            </button>
+                          </>
+                        )}
                         <button
                           onClick={() => onDeleteHighlight(item.id)}
-                          className="text-[#B0B0A8] hover:text-red-600 transition-colors p-0.5"
                           title="Remover destaque"
+                          className="p-1 text-[#A8A89E] hover:text-red-500 rounded-full transition-colors"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
+                      </div>
+                    )}
+
+                    <div className="relative z-2">
+                      {/* Embed or Preview */}
+                      {embedSrc ? (
+                        <div className="w-full bg-[#F4F3EE] dark:bg-[#121211] border-b border-[#E8E6DF] dark:border-[#2E2E2A] overflow-hidden flex justify-center items-center">
+                          <iframe
+                            src={embedSrc}
+                            className="w-full border-0 block"
+                            style={{ height: '520px', minHeight: '480px' }}
+                            title={item.title}
+                            allowFullScreen
+                            scrolling="no"
+                          />
+                        </div>
+                      ) : item.imageUrl ? (
+                        <div className="relative w-full aspect-16/9 bg-[#F4F3EE] dark:bg-[#242422] overflow-hidden border-b border-[#E8E6DF] dark:border-[#2E2E2A]">
+                          <img
+                            src={item.imageUrl}
+                            alt={item.title}
+                            loading="lazy"
+                            className="w-full h-full object-cover object-center group-hover:scale-102 transition-transform duration-300"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-full aspect-16/9 bg-[#F4F3EE] dark:bg-[#242422] flex items-center justify-center border-b border-[#E8E6DF] dark:border-[#2E2E2A]">
+                          <Linkedin className="w-8 h-8 text-[#2563EB]/40 dark:text-[#3B82F6]/40" />
+                        </div>
                       )}
+
+                      {/* Content Body with Zero-Pill Metadata */}
+                      <div className="p-5">
+                        <div className="flex items-center justify-between text-xs font-mono text-[#73736C] dark:text-[#A8A89E] mb-2.5">
+                          <div className="flex items-center gap-1.5 truncate">
+                            <span className="text-[#2563EB] dark:text-[#3B82F6] font-semibold">
+                              {category}
+                            </span>
+                            <span aria-hidden="true">·</span>
+                            <span className="tabular-nums">{item.date}</span>
+                          </div>
+                        </div>
+
+                        <h3 className="text-base font-sans font-semibold text-[#181816] dark:text-[#F5F5F0] group-hover:text-[#2563EB] dark:group-hover:text-[#3B82F6] transition-colors leading-snug mb-2">
+                          {item.title}
+                        </h3>
+
+                        {item.snippet && (
+                          <p className="text-xs text-[#57574F] dark:text-[#A8A89E] leading-relaxed line-clamp-3">
+                            {item.snippet}
+                          </p>
+                        )}
+                      </div>
                     </div>
 
-                    <h3 className="text-base font-sans font-semibold text-[#1A1A1A] group-hover:text-[#0A66C2] transition-colors leading-snug mb-2">
-                      {item.title}
-                    </h3>
+                    {/* Footer Link */}
+                    <div className="relative z-2 px-5 py-3 border-t border-[#E8E6DF] dark:border-[#2E2E2A] flex items-center justify-between text-xs bg-[#FAF9F5] dark:bg-[#181816]">
+                      <span className="text-[11px] font-mono text-[#73736C] dark:text-[#A8A89E] flex items-center gap-1">
+                        <Linkedin className="w-3 h-3 text-[#2563EB] dark:text-[#3B82F6]" />
+                        <span>LinkedIn Post</span>
+                      </span>
 
-                    {item.snippet && (
-                      <p className="text-xs text-[#57574F] leading-relaxed line-clamp-3">
-                        {item.snippet}
-                      </p>
-                    )}
-                  </div>
-                </div>
+                      <a
+                        href={item.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 font-mono font-medium text-[#2563EB] dark:text-[#3B82F6] hover:underline"
+                      >
+                        <span>Acessar</span>
+                        <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                      </a>
+                    </div>
+                  </motion.article>
+                );
+              })
+            )}
+          </motion.div>
+        </AnimatePresence>
 
-                {/* Footer action link */}
-                <div className="px-4 sm:px-5 pb-4 pt-2 border-t border-[#F2F2EB] flex items-center justify-between text-xs bg-[#FCFCFB]">
-                  <span className="text-[11px] font-mono text-[#7D7D75] flex items-center gap-1">
-                    <Linkedin className="w-3 h-3 text-[#0A66C2]" />
-                    <span>Post Oficial</span>
+        {/* Editorial "Carregar Mais" Button for 'Todas' Tab */}
+        {activeTab === 'Todas as Publicações' && filteredHighlights.length > 6 && (
+          <div className="mt-8 flex justify-center">
+            <button
+              onClick={() => setShowAllPosts(!showAllPosts)}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-[#E8E6DF] dark:border-[#2E2E2A] bg-white dark:bg-[#1C1C1A] hover:border-[#2563EB] dark:hover:border-[#3B82F6] text-[#2563EB] dark:text-[#3B82F6] text-xs font-mono font-semibold transition-all duration-120 hover:-translate-y-0.5 shadow-2xs hover:shadow-xs"
+            >
+              {showAllPosts ? (
+                <>
+                  <ChevronUp className="w-4 h-4" />
+                  <span>Mostrar apenas 6 publicações</span>
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="w-4 h-4" />
+                  <span>
+                    Carregar mais publicações (+{filteredHighlights.length - 6} restantes)
                   </span>
-
-                  <a
-                    href={item.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 font-mono font-medium text-[#0A66C2] group-hover:underline"
-                  >
-                    <span>Ver no LinkedIn</span>
-                    <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                  </a>
-                </div>
-              </motion.div>
-            );
-          })}
-        </motion.div>
+                </>
+              )}
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Modal: Adicionar / Incorporar Destaque */}
+      {/* Modal: Adicionar Destaque */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
           <div
-            className="relative w-full max-w-lg bg-white border border-[#E2E2D8] rounded-lg shadow-2xl p-6 my-8"
+            className="relative w-full max-w-lg bg-white dark:bg-[#1C1C1A] border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-xl shadow-2xl p-6 my-8 text-[#181816] dark:text-[#F5F5F0]"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between pb-3 border-b border-[#EFEFEA] mb-4">
-              <div className="flex items-center gap-2 text-sm font-semibold text-[#1A1A1A]">
-                <Linkedin className="w-4 h-4 text-[#0A66C2]" />
-                <span>Adicionar ou Incorporar Destaque do LinkedIn</span>
+            <div className="flex items-center justify-between pb-3 border-b border-[#E8E6DF] dark:border-[#2E2E2A] mb-4">
+              <div className="flex items-center gap-2 text-sm font-semibold">
+                <Linkedin className="w-4 h-4 text-[#2563EB] dark:text-[#3B82F6]" />
+                <span>Adicionar Destaque do LinkedIn</span>
               </div>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-xs text-[#7A7A70] hover:text-[#1A1A1A]"
+                className="text-xs text-[#73736C] hover:text-[#181816] dark:hover:text-white"
               >
                 ✕
               </button>
@@ -272,93 +431,36 @@ export const LinkedInHighlightsSection: React.FC<LinkedInHighlightsSectionProps>
 
             <form onSubmit={handleCreate} className="space-y-4">
               <div>
-                <label className="block text-xs font-mono uppercase text-[#66665E] mb-1">
-                  Título da Postagem ou Conquista *
+                <label className="block text-xs font-mono uppercase text-[#73736C] dark:text-[#A8A89E] mb-1">
+                  Título da Publicação *
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="Ex: Selecionado na Conferência Na Prática"
+                  placeholder="Ex: Conquista de Bolsista na Fundação Estudar"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-[#D5D5CA] rounded bg-[#FAF9F6] focus:bg-white focus:outline-none focus:border-[#0A66C2]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-mono uppercase text-[#66665E] mb-1">
-                  Link da Publicação no LinkedIn
-                </label>
-                <input
-                  type="url"
-                  placeholder="https://www.linkedin.com/posts/..."
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  className="w-full px-3 py-2 text-xs sm:text-sm border border-[#D5D5CA] rounded bg-[#FAF9F6] focus:bg-white focus:outline-none focus:border-[#0A66C2]"
-                />
-              </div>
-
-              {/* Image URL with Preset Suggestions */}
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-mono uppercase text-[#66665E] flex items-center gap-1">
-                    <Image className="w-3 h-3 text-[#0A66C2]" />
-                    <span>Mini Imagem de Pré-visualização (URL)</span>
-                  </label>
-                </div>
-                <input
-                  type="url"
-                  placeholder="https://... (URL da foto/print da postagem)"
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  className="w-full px-3 py-2 text-xs border border-[#D5D5CA] rounded bg-[#FAF9F6] focus:bg-white focus:outline-none focus:border-[#0A66C2] mb-1.5"
-                />
-
-                <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
-                  <span className="text-[#8C8C80] font-mono">Sugestões:</span>
-                  {imagePresets.map((preset, pIdx) => (
-                    <button
-                      key={pIdx}
-                      type="button"
-                      onClick={() => setImageUrl(preset.url)}
-                      className="px-2 py-0.5 rounded bg-[#F0EFEB] hover:bg-[#E2E1DA] text-[#4A4A40] transition-colors"
-                    >
-                      {preset.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Embed Code option */}
-              <div>
-                <label className="block text-xs font-mono uppercase text-[#66665E] mb-1 flex items-center gap-1">
-                  <Code2 className="w-3 h-3 text-[#0A66C2]" />
-                  <span>Ou Código de Incorporação (Embed LinkedIn / &lt;iframe&gt;)</span>
-                </label>
-                <textarea
-                  rows={2}
-                  placeholder={`Cole o código <iframe ...> obtido em "Embed this post" no LinkedIn`}
-                  value={embedCode}
-                  onChange={(e) => setEmbedCode(e.target.value)}
-                  className="w-full px-3 py-2 text-xs font-mono border border-[#D5D5CA] rounded bg-[#FAF9F6] focus:bg-white focus:outline-none focus:border-[#0A66C2]"
+                  className="w-full px-3 py-2 text-sm border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-lg bg-[#FAF9F5] dark:bg-[#121211] focus:outline-none focus:border-[#2563EB]"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-mono uppercase text-[#66665E] mb-1">
-                    Tag / Categoria
+                  <label className="block text-xs font-mono uppercase text-[#73736C] dark:text-[#A8A89E] mb-1">
+                    Categoria Editorial
                   </label>
-                  <input
-                    type="text"
-                    placeholder="Conquista & Carreira"
-                    value={tag}
-                    onChange={(e) => setTag(e.target.value)}
-                    className="w-full px-3 py-2 text-xs sm:text-sm border border-[#D5D5CA] rounded bg-[#FAF9F6] focus:bg-white focus:outline-none focus:border-[#0A66C2]"
-                  />
+                  <select
+                    value={categoryChoice}
+                    onChange={(e) => setCategoryChoice(e.target.value as FourTabCategory)}
+                    className="w-full px-3 py-2 text-xs border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-lg bg-[#FAF9F5] dark:bg-[#121211] focus:outline-none focus:border-[#2563EB]"
+                  >
+                    <option value="Credenciais & Carreira">Credenciais & Carreira</option>
+                    <option value="Palestras & Histórias">Palestras & Histórias</option>
+                    <option value="Artigos & Insights">Artigos & Insights</option>
+                  </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-mono uppercase text-[#66665E] mb-1">
+                  <label className="block text-xs font-mono uppercase text-[#73736C] dark:text-[#A8A89E] mb-1">
                     Ano / Data
                   </label>
                   <input
@@ -366,35 +468,75 @@ export const LinkedInHighlightsSection: React.FC<LinkedInHighlightsSectionProps>
                     placeholder="2026"
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
-                    className="w-full px-3 py-2 text-xs sm:text-sm border border-[#D5D5CA] rounded bg-[#FAF9F6] focus:bg-white focus:outline-none focus:border-[#0A66C2]"
+                    className="w-full px-3 py-2 text-xs border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-lg bg-[#FAF9F5] dark:bg-[#121211] focus:outline-none focus:border-[#2563EB]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-mono uppercase text-[#66665E] mb-1">
-                  Resumo ou Trecho do Post
+                <label className="block text-xs font-mono uppercase text-[#73736C] dark:text-[#A8A89E] mb-1">
+                  URL da Publicação no LinkedIn
                 </label>
-                <textarea
-                  rows={2}
-                  placeholder="Breve resumo sobre o tema do post ou impacto da conquista..."
-                  value={snippet}
-                  onChange={(e) => setSnippet(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-[#D5D5CA] rounded bg-[#FAF9F6] focus:bg-white focus:outline-none focus:border-[#0A66C2]"
+                <input
+                  type="url"
+                  placeholder="https://www.linkedin.com/posts/..."
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  className="w-full px-3 py-2 text-xs border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-lg bg-[#FAF9F5] dark:bg-[#121211] focus:outline-none focus:border-[#2563EB]"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#EFEFEA]">
+              <div>
+                <label className="block text-xs font-mono uppercase text-[#73736C] dark:text-[#A8A89E] mb-1">
+                  URL da Imagem de Prévia (Opcional)
+                </label>
+                <input
+                  type="url"
+                  placeholder="https://images.unsplash.com/..."
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  className="w-full px-3 py-2 text-xs border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-lg bg-[#FAF9F5] dark:bg-[#121211] focus:outline-none focus:border-[#2563EB]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono uppercase text-[#73736C] dark:text-[#A8A89E] mb-1 flex items-center gap-1">
+                  <Code2 className="w-3 h-3 text-[#2563EB]" />
+                  <span>Código de Embed do LinkedIn &lt;iframe&gt; (Opcional)</span>
+                </label>
+                <textarea
+                  rows={2}
+                  placeholder={`<iframe src="https://www.linkedin.com/embed/..." ...>`}
+                  value={embedCode}
+                  onChange={(e) => setEmbedCode(e.target.value)}
+                  className="w-full px-3 py-2 text-xs font-mono border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-lg bg-[#FAF9F5] dark:bg-[#121211] focus:outline-none focus:border-[#2563EB]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono uppercase text-[#73736C] dark:text-[#A8A89E] mb-1">
+                  Resumo / Trecho
+                </label>
+                <textarea
+                  rows={2}
+                  placeholder="Breve descrição da publicação..."
+                  value={snippet}
+                  onChange={(e) => setSnippet(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-lg bg-[#FAF9F5] dark:bg-[#121211] focus:outline-none focus:border-[#2563EB]"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#E8E6DF] dark:border-[#2E2E2A]">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-xs text-[#66665E] hover:text-[#1A1A1A]"
+                  className="px-4 py-2 text-xs text-[#73736C] hover:text-[#181816] dark:hover:text-white"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-xs font-semibold text-white bg-[#0A66C2] hover:bg-[#084e96] rounded shadow-xs"
+                  className="px-4 py-2 text-xs font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] dark:bg-[#3B82F6] dark:hover:bg-[#2563EB] rounded-lg shadow-xs"
                 >
                   Salvar Destaque
                 </button>

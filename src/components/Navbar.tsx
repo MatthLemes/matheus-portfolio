@@ -1,128 +1,168 @@
 import React, { useState } from 'react';
-import { Sliders, Menu, X, ArrowUpRight } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Sun, Moon, ArrowUpRight, Menu, X, Sliders } from 'lucide-react';
+import { Theme } from '../hooks/useTheme';
 
 interface NavbarProps {
   name: string;
-  onOpenEditor: () => void;
+  theme: Theme;
+  onToggleTheme: () => void;
+  onOpenEditor?: () => void;
   primaryActionUrl: string;
   isAdmin?: boolean;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ name, onOpenEditor, primaryActionUrl, isAdmin = false }) => {
+export const Navbar: React.FC<NavbarProps> = ({
+  name,
+  theme,
+  onToggleTheme,
+  onOpenEditor,
+  primaryActionUrl,
+  isAdmin = false,
+}) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeNav, setActiveNav] = useState('inicio');
+  const [hoveredNav, setHoveredNav] = useState<string | null>(null);
+
+  const navLinks = [
+    { id: 'inicio', label: 'Início', href: '#inicio' },
+    { id: 'trajetoria', label: 'Trajetória', href: '#trajetoria' },
+    { id: 'credenciais', label: 'Credenciais', href: '#formacao' },
+    { id: 'vitrine', label: 'Vitrine', href: '#projetos' },
+    { id: 'competencias', label: 'Competências', href: '#competencias' },
+  ];
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-[#FCFCFB]/95 backdrop-blur-md border-b border-[#E8E8E2] transition-colors">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-        {/* Mobile menu button (on mobile left) */}
-        <div className="md:hidden flex items-center">
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="flex items-center gap-1.5 p-1.5 text-xs font-semibold uppercase tracking-wider text-[#4A4A42] hover:text-[#1A1A1A]"
-            aria-label="Menu de navegação"
+    <header className="sticky top-0 z-40 w-full bg-[#FAF9F5]/90 dark:bg-[#121211]/90 backdrop-blur-md border-b border-[#E8E6DF] dark:border-[#2E2E2A] transition-colors duration-200">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+        {/* Zona 1: Wordmark em 1 linha */}
+        <div className="flex items-center gap-3 shrink-0">
+          <a
+            href="#inicio"
+            className="group flex items-baseline gap-2 text-sm sm:text-base font-bold font-sans tracking-tight text-[#141414] dark:text-[#F5F5F0] hover:text-[#2563EB] dark:hover:text-[#3B82F6] transition-colors"
           >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            <span>Menu</span>
-          </button>
+            <span>{name}</span>
+            <span className="hidden lg:inline text-[11px] font-mono font-normal text-[#73736C] dark:text-[#A8A89E] tracking-normal">
+              · Automação & Design
+            </span>
+          </a>
         </div>
 
-        {/* Desktop Navigation Links — 6 Chunked Items (Miller's Law) */}
-        <nav className="hidden md:flex items-center gap-4 lg:gap-6 xl:gap-8 text-xs font-semibold uppercase tracking-wider text-[#66665E] whitespace-nowrap">
-          <a href="#inicio" className="hover:text-[#1A1A1A] transition-colors whitespace-nowrap">
-            Início
-          </a>
-          <a href="#trajetoria" className="hover:text-[#1A1A1A] transition-colors whitespace-nowrap">
-            Trajetória
-          </a>
-          <a href="#formacao" className="hover:text-[#1A1A1A] transition-colors whitespace-nowrap" title="Formação, Certificações & Conquistas">
-            Credenciais
-          </a>
-          <a href="#projetos" className="hover:text-[#1A1A1A] transition-colors whitespace-nowrap" title="Projetos no Behance & Destaques do LinkedIn">
-            Vitrine
-          </a>
-          <a href="#repertorio-criativo" className="hover:text-[#1A1A1A] transition-colors whitespace-nowrap" title="Playlists do Spotify & Poesias">
-            Espaço Criativo
-          </a>
-          <a href="#competencias" className="hover:text-[#1A1A1A] transition-colors whitespace-nowrap">
-            Competências
-          </a>
+        {/* Zona 2: 5 Links de navegação estritos com sublinhado e pill deslizante */}
+        <nav
+          onMouseLeave={() => setHoveredNav(null)}
+          className="hidden md:flex items-center gap-1 lg:gap-1.5 text-xs font-mono uppercase tracking-wider text-[#73736C] dark:text-[#A8A89E]"
+        >
+          {navLinks.map((link) => {
+            const isActive = activeNav === link.id;
+            const isHovered = hoveredNav === link.id;
+
+            return (
+              <a
+                key={link.id}
+                href={link.href}
+                onClick={() => setActiveNav(link.id)}
+                onMouseEnter={() => setHoveredNav(link.id)}
+                className={`relative px-3.5 py-2 transition-colors font-medium rounded-lg ${
+                  isActive
+                    ? 'text-[#2563EB] dark:text-[#3B82F6] font-semibold'
+                    : 'hover:text-[#181816] dark:hover:text-white'
+                }`}
+              >
+                {/* Gliding hover pill background */}
+                {isHovered && (
+                  <motion.div
+                    layoutId="navbar-hover-glow"
+                    className="absolute inset-0 bg-[#2563EB]/8 dark:bg-[#3B82F6]/15 rounded-lg -z-1"
+                    transition={{ type: 'spring', stiffness: 350, damping: 26 }}
+                  />
+                )}
+
+                <span className="relative z-10">{link.label}</span>
+
+                {/* Active indicator underline */}
+                {isActive && (
+                  <motion.div
+                    layoutId="navbar-active-indicator"
+                    className="absolute bottom-0.5 left-3 right-3 h-[2px] bg-[#2563EB] dark:bg-[#3B82F6] rounded-full"
+                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                  />
+                )}
+              </a>
+            );
+          })}
         </nav>
 
-        {/* Action Buttons */}
-        <div className="flex items-center gap-2.5 shrink-0">
-          {isAdmin && (
+        {/* Zona 3: Ações (Alternador de Tema Sol/Lua + LinkedIn CTA) */}
+        <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+          {/* Theme Toggle Sun / Moon */}
+          <button
+            onClick={onToggleTheme}
+            aria-label={theme === 'dark' ? 'Ativar tema claro' : 'Ativar tema escuro'}
+            title={theme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}
+            className="p-2 rounded-lg text-[#57574F] dark:text-[#D4D4CA] hover:text-[#141414] dark:hover:text-white bg-[#F4F3EE] dark:bg-[#1C1C1A] border border-[#E8E6DF] dark:border-[#2E2E2A] hover:border-[#2563EB] dark:hover:border-[#3B82F6] transition-all duration-120 hover:-translate-y-0.5"
+          >
+            {theme === 'dark' ? (
+              <Sun className="w-4 h-4 text-amber-400" />
+            ) : (
+              <Moon className="w-4 h-4 text-[#2563EB]" />
+            )}
+          </button>
+
+          {isAdmin && onOpenEditor && (
             <button
               onClick={onOpenEditor}
               title="Personalizar links e informações"
-              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-medium text-[#4A4A42] bg-[#F1F1EB] hover:bg-[#E6E6DE] transition-colors rounded border border-[#E0E0D6] whitespace-nowrap"
+              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-mono font-medium text-[#57574F] dark:text-[#D4D4CA] bg-[#F4F3EE] dark:bg-[#1C1C1A] hover:bg-[#E8E6DF] dark:hover:bg-[#2E2E2A] transition-colors rounded border border-[#E8E6DF] dark:border-[#2E2E2A]"
             >
               <Sliders className="w-3.5 h-3.5" />
-              <span className="hidden xl:inline">Editar Perfil</span>
+              <span className="hidden xl:inline">Editar</span>
             </button>
           )}
 
+          {/* LinkedIn CTA Button */}
           <a
             href={primaryActionUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-[#0A66C2] hover:bg-[#084e96] transition-colors rounded whitespace-nowrap"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] dark:bg-[#3B82F6] dark:hover:bg-[#2563EB] transition-all duration-120 rounded-lg shadow-xs hover:shadow-md hover:-translate-y-0.5"
           >
             <span>LinkedIn</span>
             <ArrowUpRight className="w-3.5 h-3.5" />
           </a>
+
+          {/* Mobile menu trigger */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden p-2 rounded-lg text-[#57574F] dark:text-[#D4D4CA] bg-[#F4F3EE] dark:bg-[#1C1C1A] border border-[#E8E6DF] dark:border-[#2E2E2A]"
+            aria-label="Abrir menu móvel"
+          >
+            {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+          </button>
         </div>
       </div>
 
-      {/* Mobile nav drawer — Consolidated 6 Items */}
+      {/* Mobile Menu Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-[#E8E8E2] bg-[#FCFCFB] px-6 py-4 space-y-2.5 text-sm font-medium text-[#4A4A42]">
-          <a 
-            href="#inicio" 
-            onClick={() => setMobileMenuOpen(false)}
-            className="block py-1 hover:text-[#1A1A1A]"
-          >
-            Início
-          </a>
-          <a 
-            href="#trajetoria" 
-            onClick={() => setMobileMenuOpen(false)}
-            className="block py-1 hover:text-[#1A1A1A]"
-          >
-            Trajetória <span className="text-xs text-[#82827A] font-normal block sm:inline sm:ml-1">— Linha do tempo profissional</span>
-          </a>
-          <a 
-            href="#formacao" 
-            onClick={() => setMobileMenuOpen(false)}
-            className="block py-1 hover:text-[#1A1A1A]"
-          >
-            Credenciais <span className="text-xs text-[#82827A] font-normal block sm:inline sm:ml-1">— Formação, certificações e conquistas</span>
-          </a>
-          <a 
-            href="#projetos" 
-            onClick={() => setMobileMenuOpen(false)}
-            className="block py-1 hover:text-[#1A1A1A]"
-          >
-            Vitrine <span className="text-xs text-[#82827A] font-normal block sm:inline sm:ml-1">— Projetos Behance e destaques</span>
-          </a>
-          <a 
-            href="#repertorio-criativo" 
-            onClick={() => setMobileMenuOpen(false)}
-            className="block py-1 hover:text-[#1A1A1A]"
-          >
-            Espaço Criativo <span className="text-xs text-[#82827A] font-normal block sm:inline sm:ml-1">— Playlists e poesias</span>
-          </a>
-          <a 
-            href="#competencias" 
-            onClick={() => setMobileMenuOpen(false)}
-            className="block py-1 hover:text-[#1A1A1A]"
-          >
-            Competências <span className="text-xs text-[#82827A] font-normal block sm:inline sm:ml-1">— Hard skills e ferramentas</span>
-          </a>
-          <div className="pt-2 border-t border-[#E8E8E2]">
-            <a 
-              href="#contato" 
+        <div className="md:hidden border-t border-[#E8E6DF] dark:border-[#2E2E2A] bg-[#FAF9F5] dark:bg-[#121211] px-5 py-4 space-y-2 text-sm font-medium">
+          {navLinks.map((link) => (
+            <a
+              key={link.id}
+              href={link.href}
+              onClick={() => {
+                setActiveNav(link.id);
+                setMobileMenuOpen(false);
+              }}
+              className="block py-2 text-[#57574F] dark:text-[#D4D4CA] hover:text-[#2563EB] dark:hover:text-[#3B82F6] border-b border-[#E8E6DF]/50 dark:border-[#2E2E2A]/50 last:border-0"
+            >
+              {link.label}
+            </a>
+          ))}
+          <div className="pt-2">
+            <a
+              href="#contato"
               onClick={() => setMobileMenuOpen(false)}
-              className="block py-1 text-[#0A66C2] font-semibold hover:text-[#084e96]"
+              className="block py-2 text-xs font-mono font-semibold text-[#2563EB] dark:text-[#3B82F6]"
             >
               Vamos Conversar →
             </a>

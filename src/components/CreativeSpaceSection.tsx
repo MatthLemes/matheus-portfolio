@@ -59,25 +59,18 @@ export const CreativeSpaceSection: React.FC<CreativeSpaceSectionProps> = ({
         return `https://open.spotify.com/embed/track/${id}?utm_source=generator`;
       }
     }
-    if (trimmed.includes('open.spotify.com/album/')) {
-      const parts = trimmed.split('album/');
-      if (parts[1]) {
-        const id = parts[1].split('?')[0];
-        return `https://open.spotify.com/embed/album/${id}?utm_source=generator`;
-      }
-    }
-    return trimmed;
+    if (trimmed.startsWith('http')) return trimmed;
+    return `https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M?utm_source=generator`;
   };
 
   const handleCreateSpotify = (e: React.FormEvent) => {
     e.preventDefault();
     if (!spotifyTitle || !spotifyInput) return;
 
-    const embedUrl = parseSpotifySrc(spotifyInput);
     onAddSpotify({
       title: spotifyTitle,
-      subtitle: spotifySubtitle || 'Playlist selecionada',
-      embedUrlOrCode: embedUrl,
+      subtitle: spotifySubtitle || 'Curadoria musical',
+      embedUrlOrCode: spotifyInput,
       externalUrl: spotifyInput.startsWith('http') ? spotifyInput : undefined,
     });
 
@@ -106,19 +99,18 @@ export const CreativeSpaceSection: React.FC<CreativeSpaceSectionProps> = ({
   };
 
   return (
-    <section id="repertorio-criativo" className="py-16 md:py-20 border-b border-[#EAEAE2] bg-[#FCFCFB]">
+    <section id="repertorio-criativo" className="py-16 md:py-20 border-b border-[#E8E6DF] dark:border-[#2E2E2A] bg-[#FAF9F5] dark:bg-[#121211] transition-colors">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
           <div>
-            <div className="text-xs font-mono uppercase tracking-widest text-[#7D7D75] mb-1.5 flex items-center gap-1.5">
-              <Music2 className="w-3.5 h-3.5 text-[#1DB954]" />
-              <span>07. Repertório Criativo & Sonoro</span>
+            <div className="text-xs font-mono uppercase tracking-widest text-[#2563EB] dark:text-[#3B82F6] mb-1.5 font-semibold">
+              07. Repertório & Sensibilidade
             </div>
-            <h2 className="text-3xl sm:text-4xl font-bold font-sans text-[#141414] tracking-tight">
-              Playlists & Poesias
+            <h2 className="text-3xl sm:text-4xl font-bold font-sans text-[#141414] dark:text-[#F5F5F0] tracking-tight">
+              Espaço Criativo
             </h2>
-            <p className="text-sm sm:text-base text-[#57574F] mt-2 max-w-2xl leading-relaxed">
+            <p className="text-sm sm:text-base text-[#57574F] dark:text-[#A8A89E] mt-2 max-w-2xl leading-relaxed">
               A música e a escrita sempre foram partes fundamentais da minha vida e estão entre os meus hobbies favoritos. Tenho um contato constante com a música — essencial para o meu processo criativo e fluxo de trabalho —, além de um apreço genuíno por escrever poesias e reflexões autorais.
             </p>
           </div>
@@ -126,19 +118,19 @@ export const CreativeSpaceSection: React.FC<CreativeSpaceSectionProps> = ({
 
         {/* Two Columns: Spotify Playlists (Left) & Poesias (Right) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Left Column: Spotify Playlists with compact embed */}
+          {/* Left Column: Spotify Playlists */}
           <div className="lg:col-span-6 space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-[#EBEBE2]">
+            <div className="flex items-center justify-between pb-2 border-b border-[#E8E6DF] dark:border-[#2E2E2A]">
               <div className="flex items-center gap-2">
                 <Music2 className="w-4 h-4 text-[#1DB954]" />
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-[#1A1A1A]">
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-[#181816] dark:text-white font-sans">
                   Playlists no Spotify
                 </h3>
               </div>
               {isAdmin && (
                 <button
                   onClick={() => setIsSpotifyModalOpen(true)}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-[#1A1A1A] bg-[#F1F1EB] hover:bg-[#E5E5DC] rounded transition-colors border border-[#DCDCD0]"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-[#181816] dark:text-white bg-[#F4F3EE] dark:bg-[#1C1C1A] hover:bg-[#E8E6DF] dark:hover:bg-[#2E2E2A] rounded-lg transition-colors border border-[#E8E6DF] dark:border-[#2E2E2A]"
                 >
                   <Plus className="w-3 h-3" />
                   <span>Adicionar Playlist</span>
@@ -146,15 +138,7 @@ export const CreativeSpaceSection: React.FC<CreativeSpaceSectionProps> = ({
               )}
             </div>
 
-            {/* Mobile Swipe Hint for Spotify */}
-            {spotifyPlaylists.length > 1 && (
-              <div className="md:hidden flex items-center justify-between text-[11px] font-mono text-[#7D7D75] px-1">
-                <span>← Deslize para ver outras playlists →</span>
-                <span className="text-[10px] text-[#A0A096]">({spotifyPlaylists.length})</span>
-              </div>
-            )}
-
-            {/* Spotify List / Mobile Swipe Carousel with Staggered Fade-in */}
+            {/* Spotify List */}
             <motion.div
               variants={staggerContainer}
               initial="hidden"
@@ -169,15 +153,15 @@ export const CreativeSpaceSection: React.FC<CreativeSpaceSectionProps> = ({
                   <motion.div
                     key={item.id}
                     variants={staggerItem}
-                    className="w-[84vw] sm:w-[320px] md:w-auto shrink-0 md:shrink snap-start p-3.5 bg-white border border-[#E2E2D8] rounded-xl hover:border-[#1DB954]/60 transition-colors shadow-xs"
+                    className="magnetic-card w-[84vw] sm:w-[320px] md:w-auto shrink-0 md:shrink snap-start p-3.5 bg-white dark:bg-[#1C1C1A] border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-xl hover:border-[#1DB954]/60 transition-all duration-120 shadow-2xs hover:shadow-md"
                   >
                     <div className="flex items-center justify-between mb-2">
                       <div>
-                        <h4 className="text-xs font-semibold text-[#1A1A1A]">
+                        <h4 className="text-xs font-semibold text-[#181816] dark:text-white">
                           {item.title}
                         </h4>
                         {item.subtitle && (
-                          <span className="text-[11px] text-[#73736C]">
+                          <span className="text-[11px] text-[#73736C] dark:text-[#A8A89E]">
                             {item.subtitle}
                           </span>
                         )}
@@ -188,7 +172,7 @@ export const CreativeSpaceSection: React.FC<CreativeSpaceSectionProps> = ({
                             href={item.externalUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-[#66665E] hover:text-[#1DB954] transition-colors"
+                            className="text-[#73736C] dark:text-[#A8A89E] hover:text-[#1DB954] transition-colors"
                             title="Abrir no Spotify"
                           >
                             <ExternalLink className="w-3.5 h-3.5" />
@@ -197,7 +181,7 @@ export const CreativeSpaceSection: React.FC<CreativeSpaceSectionProps> = ({
                         {isAdmin && (
                           <button
                             onClick={() => onDeleteSpotify(item.id)}
-                            className="text-[#999990] hover:text-red-600 transition-colors"
+                            className="text-[#A8A89E] hover:text-red-500 transition-colors"
                             title="Remover playlist"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -206,7 +190,6 @@ export const CreativeSpaceSection: React.FC<CreativeSpaceSectionProps> = ({
                       </div>
                     </div>
 
-                    {/* Compact Spotify Player (Height 152px) */}
                     <div className="rounded-lg overflow-hidden bg-[#121212]">
                       <iframe
                         src={embedSrc}
@@ -225,19 +208,19 @@ export const CreativeSpaceSection: React.FC<CreativeSpaceSectionProps> = ({
             </motion.div>
           </div>
 
-          {/* Right Column: Poesias com Incorporação Menor / Compacta */}
+          {/* Right Column: Poesias */}
           <div className="lg:col-span-6 space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-[#EBEBE2]">
+            <div className="flex items-center justify-between pb-2 border-b border-[#E8E6DF] dark:border-[#2E2E2A]">
               <div className="flex items-center gap-2">
-                <Feather className="w-4 h-4 text-[#1A1A1A]" />
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-[#1A1A1A]">
+                <Feather className="w-4 h-4 text-[#2563EB] dark:text-[#3B82F6]" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-[#181816] dark:text-white font-sans">
                   Poesias Autorais (Medium)
                 </h3>
               </div>
               {isAdmin && (
                 <button
                   onClick={() => setIsPoemModalOpen(true)}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-[#1A1A1A] bg-[#F1F1EB] hover:bg-[#E5E5DC] rounded transition-colors border border-[#DCDCD0]"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-[#181816] dark:text-white bg-[#F4F3EE] dark:bg-[#1C1C1A] hover:bg-[#E8E6DF] dark:hover:bg-[#2E2E2A] rounded-lg transition-colors border border-[#E8E6DF] dark:border-[#2E2E2A]"
                 >
                   <Plus className="w-3 h-3" />
                   <span>Adicionar Poesia</span>
@@ -245,15 +228,7 @@ export const CreativeSpaceSection: React.FC<CreativeSpaceSectionProps> = ({
               )}
             </div>
 
-            {/* Mobile Swipe Hint for Poetry */}
-            {poems.length > 1 && (
-              <div className="md:hidden flex items-center justify-between text-[11px] font-mono text-[#7D7D75] px-1">
-                <span>← Deslize para ler outras poesias →</span>
-                <span className="text-[10px] text-[#A0A096]">({poems.length})</span>
-              </div>
-            )}
-
-            {/* Compact Poetry Cards / Mobile Swipe Carousel with Staggered Fade-in */}
+            {/* Compact Poetry Cards */}
             <motion.div
               variants={staggerContainer}
               initial="hidden"
@@ -265,15 +240,15 @@ export const CreativeSpaceSection: React.FC<CreativeSpaceSectionProps> = ({
                 <motion.div
                   key={poem.id}
                   variants={staggerItem}
-                  className="w-[84vw] sm:w-[320px] md:w-auto shrink-0 md:shrink snap-start p-4 bg-white border border-[#E2E2D8] rounded-xl hover:border-[#1A1A1A] transition-colors shadow-xs flex flex-col justify-between"
+                  className="magnetic-card w-[84vw] sm:w-[320px] md:w-auto shrink-0 md:shrink snap-start p-4 bg-white dark:bg-[#1C1C1A] border border-[#E8E6DF] dark:border-[#2E2E2A] hover:border-[#2563EB] dark:hover:border-[#3B82F6] rounded-xl transition-all duration-120 shadow-2xs hover:shadow-md flex flex-col justify-between"
                 >
                   <div>
-                    <div className="flex items-center justify-between text-[11px] font-mono text-[#8C8C80] mb-1.5">
+                    <div className="flex items-center justify-between text-[11px] font-mono text-[#73736C] dark:text-[#A8A89E] mb-1.5">
                       <span>{poem.date || 'Poesia Autoral'}</span>
                       {isAdmin && (
                         <button
                           onClick={() => onDeletePoem(poem.id)}
-                          className="text-[#999990] hover:text-red-600 transition-colors"
+                          className="text-[#A8A89E] hover:text-red-500 transition-colors"
                           title="Remover poesia"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -281,25 +256,25 @@ export const CreativeSpaceSection: React.FC<CreativeSpaceSectionProps> = ({
                       )}
                     </div>
 
-                    <h4 className="text-base font-sans font-semibold text-[#1A1A1A] leading-snug mb-2">
+                    <h4 className="text-base font-sans font-semibold text-[#181816] dark:text-[#F5F5F0] leading-snug mb-2">
                       {poem.title}
                     </h4>
 
-                    {/* Compact excerpt quote */}
-                    <div className="p-3 bg-[#FAF9F5] border-l-2 border-[#1A1A1A] rounded-r text-xs font-sans italic text-[#3A3934] leading-relaxed mb-3">
+                    {/* Compact excerpt quote with clean hairline border */}
+                    <div className="p-3 bg-[#F4F3EE] dark:bg-[#242422] border-l-2 border-[#2563EB] dark:border-[#3B82F6] rounded-r-lg text-xs italic text-[#4A4A42] dark:text-[#D4D4CA] leading-relaxed mb-3">
                       “{poem.excerpt}”
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between pt-2 border-t border-[#F3F3EA] text-xs">
-                    <span className="text-[11px] font-mono text-[#7D7D75]">
+                  <div className="flex items-center justify-between pt-2 border-t border-[#E8E6DF] dark:border-[#2E2E2A] text-xs">
+                    <span className="text-[11px] font-mono text-[#73736C] dark:text-[#A8A89E]">
                       Publicado no Medium
                     </span>
                     <a
                       href={poem.mediumUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 font-mono font-medium text-[#1A1A1A] hover:underline"
+                      className="inline-flex items-center gap-1 font-mono font-medium text-[#2563EB] dark:text-[#3B82F6] hover:underline"
                     >
                       <span>Ler no Medium</span>
                       <ArrowUpRight className="w-3.5 h-3.5" />
@@ -316,17 +291,17 @@ export const CreativeSpaceSection: React.FC<CreativeSpaceSectionProps> = ({
       {isSpotifyModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
           <div
-            className="relative w-full max-w-md bg-white border border-[#E2E2D8] rounded-lg shadow-2xl p-6 my-8"
+            className="relative w-full max-w-md bg-white dark:bg-[#1C1C1A] border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-xl shadow-2xl p-6 my-8 text-[#181816] dark:text-[#F5F5F0]"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between pb-3 border-b border-[#EFEFEA] mb-4">
-              <div className="flex items-center gap-2 text-sm font-semibold text-[#1A1A1A]">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E8E6DF] dark:border-[#2E2E2A] mb-4">
+              <div className="flex items-center gap-2 text-sm font-semibold">
                 <Music2 className="w-4 h-4 text-[#1DB954]" />
                 <span>Adicionar Playlist do Spotify</span>
               </div>
               <button
                 onClick={() => setIsSpotifyModalOpen(false)}
-                className="text-xs text-[#7A7A70] hover:text-[#1A1A1A]"
+                className="text-xs text-[#73736C] hover:text-[#181816] dark:hover:text-white"
               >
                 ✕
               </button>
@@ -334,7 +309,7 @@ export const CreativeSpaceSection: React.FC<CreativeSpaceSectionProps> = ({
 
             <form onSubmit={handleCreateSpotify} className="space-y-4">
               <div>
-                <label className="block text-xs font-mono uppercase text-[#66665E] mb-1">
+                <label className="block text-xs font-mono uppercase text-[#73736C] dark:text-[#A8A89E] mb-1">
                   Título da Playlist *
                 </label>
                 <input
@@ -343,48 +318,48 @@ export const CreativeSpaceSection: React.FC<CreativeSpaceSectionProps> = ({
                   placeholder="Ex: Foco Criativo & Design"
                   value={spotifyTitle}
                   onChange={(e) => setSpotifyTitle(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-[#D5D5CA] rounded bg-[#FAF9F6] focus:bg-white focus:outline-none focus:border-[#1DB954]"
+                  className="w-full px-3 py-2 text-sm border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-lg bg-[#FAF9F5] dark:bg-[#121211] focus:outline-none focus:border-[#1DB954]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-mono uppercase text-[#66665E] mb-1">
+                <label className="block text-xs font-mono uppercase text-[#73736C] dark:text-[#A8A89E] mb-1">
                   Subtítulo / Descrição Curta
                 </label>
                 <input
                   type="text"
-                  placeholder="Ex: Instrumentais, Jazz e Ambient para produção"
+                  placeholder="Ex: Instrumentais e Ambient para produção"
                   value={spotifySubtitle}
                   onChange={(e) => setSpotifySubtitle(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-[#D5D5CA] rounded bg-[#FAF9F6] focus:bg-white focus:outline-none focus:border-[#1DB954]"
+                  className="w-full px-3 py-2 text-sm border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-lg bg-[#FAF9F5] dark:bg-[#121211] focus:outline-none focus:border-[#1DB954]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-mono uppercase text-[#66665E] mb-1">
+                <label className="block text-xs font-mono uppercase text-[#73736C] dark:text-[#A8A89E] mb-1">
                   Link ou Código Embed do Spotify *
                 </label>
                 <textarea
                   required
                   rows={3}
-                  placeholder="Cole o link da playlist (open.spotify.com/playlist/...) ou o código <iframe> do Spotify"
+                  placeholder="Cole o link da playlist (open.spotify.com/playlist/...) ou <iframe>"
                   value={spotifyInput}
                   onChange={(e) => setSpotifyInput(e.target.value)}
-                  className="w-full px-3 py-2 text-xs font-mono border border-[#D5D5CA] rounded bg-[#FAF9F6] focus:bg-white focus:outline-none focus:border-[#1DB954]"
+                  className="w-full px-3 py-2 text-xs font-mono border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-lg bg-[#FAF9F5] dark:bg-[#121211] focus:outline-none focus:border-[#1DB954]"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#EFEFEA]">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#E8E6DF] dark:border-[#2E2E2A]">
                 <button
                   type="button"
                   onClick={() => setIsSpotifyModalOpen(false)}
-                  className="px-4 py-2 text-xs text-[#66665E] hover:text-[#1A1A1A]"
+                  className="px-4 py-2 text-xs text-[#73736C] hover:text-[#181816] dark:hover:text-white"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-xs font-semibold text-white bg-[#1DB954] hover:bg-[#1aa34a] rounded shadow-xs"
+                  className="px-4 py-2 text-xs font-semibold text-white bg-[#1DB954] hover:bg-[#1aa34a] rounded-lg shadow-xs"
                 >
                   Salvar Playlist
                 </button>
@@ -398,17 +373,17 @@ export const CreativeSpaceSection: React.FC<CreativeSpaceSectionProps> = ({
       {isPoemModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
           <div
-            className="relative w-full max-w-md bg-white border border-[#E2E2D8] rounded-lg shadow-2xl p-6 my-8"
+            className="relative w-full max-w-md bg-white dark:bg-[#1C1C1A] border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-xl shadow-2xl p-6 my-8 text-[#181816] dark:text-[#F5F5F0]"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between pb-3 border-b border-[#EFEFEA] mb-4">
-              <div className="flex items-center gap-2 text-sm font-semibold text-[#1A1A1A]">
-                <Feather className="w-4 h-4 text-[#1A1A1A]" />
+            <div className="flex items-center justify-between pb-3 border-b border-[#E8E6DF] dark:border-[#2E2E2A] mb-4">
+              <div className="flex items-center gap-2 text-sm font-semibold">
+                <Feather className="w-4 h-4 text-[#2563EB] dark:text-[#3B82F6]" />
                 <span>Adicionar Poesia do Medium</span>
               </div>
               <button
                 onClick={() => setIsPoemModalOpen(false)}
-                className="text-xs text-[#7A7A70] hover:text-[#1A1A1A]"
+                className="text-xs text-[#73736C] hover:text-[#181816] dark:hover:text-white"
               >
                 ✕
               </button>
@@ -416,7 +391,7 @@ export const CreativeSpaceSection: React.FC<CreativeSpaceSectionProps> = ({
 
             <form onSubmit={handleCreatePoem} className="space-y-4">
               <div>
-                <label className="block text-xs font-mono uppercase text-[#66665E] mb-1">
+                <label className="block text-xs font-mono uppercase text-[#73736C] dark:text-[#A8A89E] mb-1">
                   Título da Poesia *
                 </label>
                 <input
@@ -425,12 +400,12 @@ export const CreativeSpaceSection: React.FC<CreativeSpaceSectionProps> = ({
                   placeholder="Ex: Intervalo e Silêncio"
                   value={poemTitle}
                   onChange={(e) => setPoemTitle(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-[#D5D5CA] rounded bg-[#FAF9F6] focus:bg-white focus:outline-none focus:border-[#1A1A1A]"
+                  className="w-full px-3 py-2 text-sm border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-lg bg-[#FAF9F5] dark:bg-[#121211] focus:outline-none focus:border-[#2563EB]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-mono uppercase text-[#66665E] mb-1">
+                <label className="block text-xs font-mono uppercase text-[#73736C] dark:text-[#A8A89E] mb-1">
                   Trecho ou Estrofe em Destaque *
                 </label>
                 <textarea
@@ -439,12 +414,12 @@ export const CreativeSpaceSection: React.FC<CreativeSpaceSectionProps> = ({
                   placeholder="Digite os versos principais..."
                   value={poemExcerpt}
                   onChange={(e) => setPoemExcerpt(e.target.value)}
-                  className="w-full px-3 py-2 text-sm font-serif border border-[#D5D5CA] rounded bg-[#FAF9F6] focus:bg-white focus:outline-none focus:border-[#1A1A1A]"
+                  className="w-full px-3 py-2 text-sm border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-lg bg-[#FAF9F5] dark:bg-[#121211] focus:outline-none focus:border-[#2563EB]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-mono uppercase text-[#66665E] mb-1">
+                <label className="block text-xs font-mono uppercase text-[#73736C] dark:text-[#A8A89E] mb-1">
                   Link da Publicação no Medium
                 </label>
                 <input
@@ -452,21 +427,21 @@ export const CreativeSpaceSection: React.FC<CreativeSpaceSectionProps> = ({
                   placeholder="https://medium.com/@seuperfil/..."
                   value={poemMediumUrl}
                   onChange={(e) => setPoemMediumUrl(e.target.value)}
-                  className="w-full px-3 py-2 text-xs sm:text-sm border border-[#D5D5CA] rounded bg-[#FAF9F6] focus:bg-white focus:outline-none focus:border-[#1A1A1A]"
+                  className="w-full px-3 py-2 text-xs border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-lg bg-[#FAF9F5] dark:bg-[#121211] focus:outline-none focus:border-[#2563EB]"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#EFEFEA]">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#E8E6DF] dark:border-[#2E2E2A]">
                 <button
                   type="button"
                   onClick={() => setIsPoemModalOpen(false)}
-                  className="px-4 py-2 text-xs text-[#66665E] hover:text-[#1A1A1A]"
+                  className="px-4 py-2 text-xs text-[#73736C] hover:text-[#181816] dark:hover:text-white"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-xs font-semibold text-white bg-[#1A1A1A] hover:bg-[#333333] rounded shadow-xs"
+                  className="px-4 py-2 text-xs font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] dark:bg-[#3B82F6] dark:hover:bg-[#2563EB] rounded-lg shadow-xs"
                 >
                   Salvar Poesia
                 </button>

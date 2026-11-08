@@ -13,8 +13,10 @@ import {
   PoetryCompactItem,
   LinkedInHighlight,
 } from './types/portfolio';
+import { useTheme } from './hooks/useTheme';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
+import { EditorialMarquee } from './components/EditorialMarquee';
 import { ExperienceSection } from './components/ExperienceSection';
 import { EducationSection } from './components/EducationSection';
 import { CertificationsSection } from './components/CertificationsSection';
@@ -23,16 +25,20 @@ import { EmbeddedProjectsGallery } from './components/EmbeddedProjectsGallery';
 import { LinkedInHighlightsSection } from './components/LinkedInHighlightsSection';
 import { CreativeSpaceSection } from './components/CreativeSpaceSection';
 import { SkillsSection } from './components/SkillsSection';
+import { PromptEngineeringShowcase } from './components/PromptEngineeringShowcase';
 import { ContactSection } from './components/ContactSection';
+import { DesignSystemDrawer } from './components/DesignSystemDrawer';
 import { EditProfileModal } from './components/EditProfileModal';
 import { AdminLoginModal } from './components/AdminLoginModal';
 import { FadeInReveal } from './components/FadeInReveal';
 import { ScrollProgressBar } from './components/ScrollProgressBar';
-import { Copy, Check, AlertCircle, X, Sparkles, ArrowUp } from 'lucide-react';
+import { Check, AlertCircle, ArrowUp } from 'lucide-react';
 
 const LOCAL_STORAGE_ACTIVE_KEY = 'matheus_portfolio_data_active';
 
 export default function App() {
+  const { theme, toggleTheme } = useTheme();
+
   const [data, setData] = useState<PortfolioData>(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -52,6 +58,7 @@ export default function App() {
 
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [showBackToTop, setShowBackToTop] = useState(false);
+  const [isDesignSystemOpen, setIsDesignSystemOpen] = useState(false);
 
   // Sync with disk via /api/portfolio-data on mount
   useEffect(() => {
@@ -81,7 +88,6 @@ export default function App() {
       const heroSection = document.getElementById('inicio');
       if (heroSection) {
         const rect = heroSection.getBoundingClientRect();
-        // Visible once the bottom of the hero has passed above the top of the viewport
         setShowBackToTop(rect.bottom < 50);
       } else {
         setShowBackToTop(window.scrollY > 400);
@@ -100,7 +106,7 @@ export default function App() {
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
-  // Admin access is strictly protected: requires password authentication
+  // Admin access
   const [isAdmin, setIsAdmin] = useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('matheus_admin_authenticated') === 'true';
@@ -108,7 +114,6 @@ export default function App() {
     return false;
   });
 
-  // If visitor accesses with ?admin=true, prompt for password instead of unlocking directly
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
@@ -139,7 +144,6 @@ export default function App() {
     }
   };
 
-  // Saves immediately to both browser memory (for instant F5) and the file system via POST /api/save-portfolio
   const handleSaveData = async (newData: PortfolioData) => {
     setData(newData);
     try {
@@ -245,6 +249,20 @@ export default function App() {
     handleSaveData(updatedData);
   };
 
+  const handleMoveLinkedInHighlight = (id: string, direction: 'prev' | 'next') => {
+    const list = data.linkedInHighlights || [];
+    const index = list.findIndex((h) => h.id === id);
+    if (index === -1) return;
+    const targetIndex = direction === 'prev' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= list.length) return;
+
+    const newList = [...list];
+    const [moved] = newList.splice(index, 1);
+    newList.splice(targetIndex, 0, moved);
+    const updatedData = { ...data, linkedInHighlights: newList };
+    handleSaveData(updatedData);
+  };
+
   // Handlers for Spotify Playlists
   const handleAddSpotify = (item: Omit<SpotifyEmbedItem, 'id'>) => {
     const updatedSpotify: SpotifyEmbedItem[] = [
@@ -284,29 +302,29 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FCFCFB] text-[#1A1A1A] flex flex-col font-sans selection:bg-amber-100 selection:text-amber-900">
+    <div className="min-h-screen bg-[#FAF9F5] dark:bg-[#121211] text-[#181816] dark:text-[#F5F5F0] flex flex-col font-sans transition-colors duration-200 selection:bg-[#2563EB]/15 selection:text-[#2563EB] dark:selection:bg-[#3B82F6]/25 dark:selection:text-[#3B82F6]">
       {/* Notificação Flutuante de Salvamento Automático */}
       {saveStatus !== 'idle' && (
         <div className="fixed top-4 right-4 z-50 transition-all duration-300">
           <div
-            className={`px-4 py-2.5 rounded-lg shadow-xl flex items-center gap-2.5 text-xs font-medium border backdrop-blur-md ${
+            className={`px-4 py-2.5 rounded-xl shadow-xl flex items-center gap-2.5 text-xs font-mono font-medium border backdrop-blur-md ${
               saveStatus === 'saved'
-                ? 'bg-[#1A1A1A] text-white border-emerald-500/50'
+                ? 'bg-[#181816] dark:bg-[#242422] text-white border-emerald-500/50'
                 : saveStatus === 'saving'
-                ? 'bg-[#1A1A1A] text-white border-amber-400/50'
+                ? 'bg-[#181816] dark:bg-[#242422] text-white border-amber-400/50'
                 : 'bg-red-950 text-white border-red-500/50'
             }`}
           >
             {saveStatus === 'saving' && (
               <>
                 <div className="w-3.5 h-3.5 rounded-full border-2 border-amber-400 border-t-transparent animate-spin" />
-                <span>Gravando alteração no arquivo do projeto...</span>
+                <span>Gravando alteração no projeto...</span>
               </>
             )}
             {saveStatus === 'saved' && (
               <>
                 <Check className="w-4 h-4 text-emerald-400" />
-                <span>✓ Salvo automaticamente no projeto! Pronto para o Git e Vercel.</span>
+                <span>✓ Salvo automaticamente!</span>
               </>
             )}
             {saveStatus === 'error' && (
@@ -319,18 +337,20 @@ export default function App() {
         </div>
       )}
 
-      {/* Global Scroll Progress Bar (Zeigarnik Effect / Goal-Gradient) */}
+      {/* Global Scroll Progress Bar com Gradiente Cobalto */}
       <ScrollProgressBar />
 
       {/* 3-Zone Top Navigation Contract */}
       <Navbar
         name={data.name}
+        theme={theme}
+        onToggleTheme={toggleTheme}
         onOpenEditor={() => setIsEditorOpen(true)}
         primaryActionUrl={data.links.linkedin}
         isAdmin={isAdmin}
       />
 
-      {/* Main Content Sections sequenced according to specifications */}
+      {/* Main Content Sections */}
       <main className="flex-1">
         {/* 1. Hero Section */}
         <Hero
@@ -344,7 +364,10 @@ export default function App() {
           onOpenEditor={() => setIsEditorOpen(true)}
         />
 
-        {/* 2. Trajetória Profissional (Linha do tempo leve e interativa) */}
+        {/* Fita Contínua Editorial 1 (Após o Hero) */}
+        <EditorialMarquee id="marquee-hero" />
+
+        {/* 2. Trajetória Profissional */}
         <FadeInReveal>
           <ExperienceSection
             experiences={data.experiences}
@@ -352,7 +375,7 @@ export default function App() {
           />
         </FadeInReveal>
 
-        {/* 3. Formação Acadêmica (após a linha do tempo, com FGV) */}
+        {/* 3. Formação Acadêmica */}
         <FadeInReveal>
           <EducationSection
             education={data.education}
@@ -360,21 +383,21 @@ export default function App() {
           />
         </FadeInReveal>
 
-        {/* 4. Certificações Relevantes (sobe após a formação) */}
+        {/* 4. Certificações Relevantes */}
         <FadeInReveal>
           <CertificationsSection
             certifications={data.certifications}
           />
         </FadeInReveal>
 
-        {/* 5. Projetos & Conquistas (sobe após as certificações) */}
+        {/* 5. Projetos & Conquistas */}
         <FadeInReveal>
           <AchievementsSection
             achievements={data.achievements}
           />
         </FadeInReveal>
 
-        {/* 6. Vitrine de Projetos (Behance e incorporações, com modo curador) */}
+        {/* 6. Vitrine de Projetos (Behance) */}
         <FadeInReveal>
           <EmbeddedProjectsGallery
             projects={data.embeddedProjects}
@@ -386,18 +409,19 @@ export default function App() {
           />
         </FadeInReveal>
 
-        {/* 7. Destaques do LinkedIn (antes de playlists e poesias) */}
+        {/* 7. Destaques do LinkedIn com 4 Abas Segmentadas & Modo ADM */}
         <FadeInReveal>
           <LinkedInHighlightsSection
             highlights={data.linkedInHighlights || []}
             linkedinProfileUrl={data.links.linkedin}
             onAddHighlight={handleAddLinkedInHighlight}
             onDeleteHighlight={handleDeleteLinkedInHighlight}
+            onMoveHighlight={handleMoveLinkedInHighlight}
             isAdmin={isAdmin}
           />
         </FadeInReveal>
 
-        {/* 8. Espaço Criativo: Playlists do Spotify & Poesias com Incorporação Compacta */}
+        {/* 8. Espaço Criativo: Spotify & Poesias */}
         <FadeInReveal>
           <CreativeSpaceSection
             spotifyPlaylists={data.spotifyPlaylists}
@@ -411,14 +435,22 @@ export default function App() {
           />
         </FadeInReveal>
 
-        {/* 9. Competências & Ferramentas (penúltimo antes do contato) */}
+        {/* 8.1 Showcase Interativo de Engenharia de Prompt & IA Aplicada */}
+        <FadeInReveal>
+          <PromptEngineeringShowcase />
+        </FadeInReveal>
+
+        {/* 9. Competências & Ferramentas */}
         <FadeInReveal>
           <SkillsSection
             skills={data.skills}
           />
         </FadeInReveal>
 
-        {/* 10. Contato Direto: Vamos conversar? */}
+        {/* Fita Contínua Editorial 2 (Antes do Contato) */}
+        <EditorialMarquee id="marquee-contato" />
+
+        {/* 10. Contato Direto & Rodapé com Botão do Design System */}
         <FadeInReveal>
           <ContactSection
             links={data.links}
@@ -427,6 +459,7 @@ export default function App() {
             isAdmin={isAdmin}
             onOpenLoginModal={() => setIsLoginModalOpen(true)}
             onLogoutAdmin={handleLogout}
+            onOpenDesignSystem={() => setIsDesignSystemOpen(true)}
           />
         </FadeInReveal>
       </main>
@@ -436,23 +469,23 @@ export default function App() {
         onClick={scrollToTop}
         aria-label="Voltar ao início da página"
         title="Voltar ao início"
-        className={`fixed z-40 flex items-center gap-1.5 px-3 py-2 text-xs font-mono font-medium rounded-full shadow-md border transition-all duration-300 ease-out group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#141414] focus-visible:ring-offset-2 ${
+        className={`fixed z-40 flex items-center gap-1.5 px-3 py-2 text-xs font-mono font-medium rounded-full shadow-md border transition-all duration-200 ease-out group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2 ${
           isAdmin
             ? 'bottom-16 sm:bottom-18 right-4 sm:right-6'
             : 'bottom-5 sm:bottom-6 right-4 sm:right-6'
         } ${
           showBackToTop
-            ? 'opacity-100 translate-y-0 pointer-events-auto bg-[#141414] text-white border-[#2A2A2A] hover:bg-[#262626] hover:shadow-xl hover:-translate-y-0.5'
-            : 'opacity-0 translate-y-3 pointer-events-none bg-[#141414] text-white border-[#2A2A2A]'
+            ? 'opacity-100 translate-y-0 pointer-events-auto bg-[#181816] dark:bg-[#F5F5F0] text-white dark:text-[#181816] border-[#2E2E2A] dark:border-white/20 hover:shadow-xl hover:-translate-y-0.5'
+            : 'opacity-0 translate-y-3 pointer-events-none bg-[#181816] text-white border-[#2E2E2A]'
         }`}
       >
-        <ArrowUp className="w-3.5 h-3.5 transition-transform duration-200 group-hover:-translate-y-0.5 text-white" />
+        <ArrowUp className="w-3.5 h-3.5 transition-transform duration-200 group-hover:-translate-y-0.5 text-white dark:text-[#181816]" />
         <span className="text-[11px] uppercase tracking-wider font-semibold">Topo</span>
       </button>
 
       {/* Floating Admin Status Bar */}
       {isAdmin && (
-        <div className="fixed bottom-4 right-4 z-40 bg-[#1A1A1A] text-white px-3.5 py-2 rounded-full shadow-xl flex items-center gap-3 text-xs border border-white/20 backdrop-blur-md">
+        <div className="fixed bottom-4 right-4 z-40 bg-[#181816] text-white px-3.5 py-2 rounded-full shadow-xl flex items-center gap-3 text-xs font-mono border border-white/20 backdrop-blur-md">
           <span className="flex items-center gap-1.5 font-medium">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
             Modo ADM
@@ -472,6 +505,12 @@ export default function App() {
           </button>
         </div>
       )}
+
+      {/* Gaveta Interativa de Tokens do Design System */}
+      <DesignSystemDrawer
+        isOpen={isDesignSystemOpen}
+        onClose={() => setIsDesignSystemOpen(false)}
+      />
 
       {/* Modal de Autenticação do Administrador */}
       <AdminLoginModal
