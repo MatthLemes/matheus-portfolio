@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, ExternalLink, Trash2, Code2, Layers, Settings2, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, ExternalLink, Trash2, Pencil, Code2, Layers, Settings2, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
 import { EmbeddedProject } from '../types/portfolio';
 import { staggerContainer, cardStaggerItem } from '../utils/animationVariants';
 
@@ -8,6 +8,7 @@ interface EmbeddedProjectsGalleryProps {
   projects: EmbeddedProject[];
   behanceUrl: string;
   onAddProject: (project: Omit<EmbeddedProject, 'id'>, insertAfterId?: string) => void;
+  onEditProject?: (project: EmbeddedProject) => void;
   onDeleteProject: (id: string) => void;
   onMoveProject?: (id: string, direction: 'prev' | 'next') => void;
   isAdmin?: boolean;
@@ -17,11 +18,14 @@ export const EmbeddedProjectsGallery: React.FC<EmbeddedProjectsGalleryProps> = (
   projects,
   behanceUrl,
   onAddProject,
+  onEditProject,
   onDeleteProject,
   onMoveProject,
   isAdmin = false,
 }) => {
   const [curatorMode, setCuratorMode] = useState(false);
+  
+  // Create Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('Identidade Visual');
@@ -29,6 +33,14 @@ export const EmbeddedProjectsGallery: React.FC<EmbeddedProjectsGalleryProps> = (
   const [description, setDescription] = useState('');
   const [tagsInput, setTagsInput] = useState('');
   const [insertPosition, setInsertPosition] = useState<string>('after-logomarca');
+
+  // Edit Modal State
+  const [editingProject, setEditingProject] = useState<EmbeddedProject | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editCategory, setEditCategory] = useState('Identidade Visual');
+  const [editEmbedCodeOrUrl, setEditEmbedCodeOrUrl] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [editTagsInput, setEditTagsInput] = useState('');
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,6 +77,48 @@ export const EmbeddedProjectsGallery: React.FC<EmbeddedProjectsGalleryProps> = (
     setDescription('');
     setTagsInput('');
     setIsModalOpen(false);
+  };
+
+  const handleOpenEdit = (project: EmbeddedProject) => {
+    setEditingProject(project);
+    setEditTitle(project.title);
+    setEditCategory(project.category || 'Identidade Visual');
+    setEditEmbedCodeOrUrl(project.embedCodeOrUrl || '');
+    setEditDescription(project.description || '');
+    setEditTagsInput((project.tags || []).join(', '));
+  };
+
+  const handleSaveEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingProject || !editTitle || !editEmbedCodeOrUrl) return;
+
+    const tags = editTagsInput
+      ? editTagsInput.split(',').map((t) => t.trim()).filter(Boolean)
+      : ['Behance', editCategory];
+
+    let externalUrl = behanceUrl;
+    if (editEmbedCodeOrUrl.startsWith('http')) {
+      externalUrl = editEmbedCodeOrUrl;
+    } else {
+      const srcMatch = editEmbedCodeOrUrl.match(/src=["'](.*?)["']/);
+      if (srcMatch && srcMatch[1]) {
+        externalUrl = srcMatch[1];
+      }
+    }
+
+    if (onEditProject) {
+      onEditProject({
+        ...editingProject,
+        title: editTitle,
+        category: editCategory,
+        embedCodeOrUrl: editEmbedCodeOrUrl,
+        description: editDescription,
+        tags,
+        externalUrl,
+      });
+    }
+
+    setEditingProject(null);
   };
 
   const renderEmbedContent = (project: EmbeddedProject) => {
@@ -143,7 +197,7 @@ export const EmbeddedProjectsGallery: React.FC<EmbeddedProjectsGalleryProps> = (
                       ? 'bg-[#181816] text-white dark:bg-white dark:text-[#181816] border-[#181816]'
                       : 'bg-white dark:bg-[#1C1C1A] text-[#57574F] dark:text-[#A8A89E] hover:text-[#181816] dark:hover:text-white border-[#E8E6DF] dark:border-[#2E2E2A]'
                   }`}
-                  title="Gerenciar e organizar projetos da vitrine"
+                  title="Gerenciar, editar e organizar projetos da vitrine"
                 >
                   <Settings2 className="w-3.5 h-3.5" />
                   <span>{curatorMode ? 'Modo Curador Ativo' : 'Gerenciar Vitrine'}</span>
@@ -179,7 +233,7 @@ export const EmbeddedProjectsGallery: React.FC<EmbeddedProjectsGalleryProps> = (
             <div className="flex items-center gap-2">
               <Eye className="w-4 h-4 shrink-0 text-[#2563EB] dark:text-[#3B82F6]" />
               <span>
-                <strong>Modo Curador ativo:</strong> Reorganize e incorpore projetos diretamente nesta área.
+                <strong>Modo Curador ativo:</strong> Reorganize a ordem, edite descrições ou incorpore novos projetos diretamente nesta área.
               </span>
             </div>
             <button
@@ -230,6 +284,13 @@ export const EmbeddedProjectsGallery: React.FC<EmbeddedProjectsGalleryProps> = (
                     </>
                   )}
                   <button
+                    onClick={() => handleOpenEdit(project)}
+                    title="Editar informações do projeto"
+                    className="p-1 text-[#73736C] dark:text-[#A8A89E] hover:text-[#2563EB] dark:hover:text-[#3B82F6] rounded-full transition-colors"
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
+                  </button>
+                  <button
                     onClick={() => onDeleteProject(project.id)}
                     title="Remover projeto"
                     className="p-1 text-[#A8A89E] hover:text-red-500 rounded-full transition-colors"
@@ -246,27 +307,9 @@ export const EmbeddedProjectsGallery: React.FC<EmbeddedProjectsGalleryProps> = (
             </motion.div>
           ))}
         </motion.div>
-
-        {/* Curator Instructions */}
-        {curatorMode && (
-          <div className="mt-8 p-4 bg-white dark:bg-[#1C1C1A] border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-xl text-xs text-[#57574F] dark:text-[#A8A89E] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <Code2 className="w-4 h-4 text-[#2563EB] dark:text-[#3B82F6] shrink-0" />
-              <span>
-                <strong>Como incorporar do Behance:</strong> No seu projeto no Behance, clique em <em>Compartilhar / Embed</em>, copie o código <code>&lt;iframe&gt;</code> e clique em <strong>Incorporar Projeto</strong>.
-              </span>
-            </div>
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="text-xs font-semibold text-[#2563EB] dark:text-[#3B82F6] underline underline-offset-4 shrink-0"
-            >
-              Adicionar agora
-            </button>
-          </div>
-        )}
       </div>
 
-      {/* Modal: Incorporar Projeto */}
+      {/* Modal: Incorporar Novo Projeto */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
           <div
@@ -378,6 +421,115 @@ export const EmbeddedProjectsGallery: React.FC<EmbeddedProjectsGalleryProps> = (
                   className="px-4 py-2 text-xs font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] dark:bg-[#3B82F6] dark:hover:bg-[#2563EB] rounded-lg shadow-2xs"
                 >
                   Salvar na Vitrine
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Editar Projeto Existente */}
+      {editingProject && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
+          <div
+            className="relative w-full max-w-lg bg-white dark:bg-[#1C1C1A] border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-xl shadow-2xl text-[#181816] dark:text-[#F5F5F0] overflow-hidden my-8"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-5 border-b border-[#E8E6DF] dark:border-[#2E2E2A]">
+              <div className="flex items-center gap-2 text-sm font-semibold">
+                <Pencil className="w-4 h-4 text-[#2563EB] dark:text-[#3B82F6]" />
+                <span>Editar Projeto da Vitrine</span>
+              </div>
+              <button
+                onClick={() => setEditingProject(null)}
+                className="text-xs text-[#73736C] hover:text-[#181816] dark:hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEdit} className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-mono uppercase text-[#73736C] dark:text-[#A8A89E] mb-1">
+                  Título do Projeto *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  className="w-full px-3.5 py-2 text-sm border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-lg bg-[#FAF9F5] dark:bg-[#121211] focus:outline-none focus:border-[#2563EB]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono uppercase text-[#73736C] dark:text-[#A8A89E] mb-1">
+                  Categoria
+                </label>
+                <select
+                  value={editCategory}
+                  onChange={(e) => setEditCategory(e.target.value)}
+                  className="w-full px-3.5 py-2 text-sm border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-lg bg-[#FAF9F5] dark:bg-[#121211] focus:outline-none focus:border-[#2563EB]"
+                >
+                  <option value="Identidade Visual">Identidade Visual</option>
+                  <option value="Design Gráfico">Design Gráfico</option>
+                  <option value="UX/UI & Interfaces">UX/UI & Interfaces</option>
+                  <option value="Design Editorial">Design Editorial</option>
+                  <option value="Marketing & Comunicação">Marketing & Comunicação</option>
+                  <option value="Outro">Outro</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono uppercase text-[#73736C] dark:text-[#A8A89E] mb-1">
+                  Código de Embed do Behance ou URL do Projeto *
+                </label>
+                <textarea
+                  required
+                  rows={3}
+                  value={editEmbedCodeOrUrl}
+                  onChange={(e) => setEditEmbedCodeOrUrl(e.target.value)}
+                  className="w-full px-3.5 py-2 text-xs sm:text-sm font-mono border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-lg bg-[#FAF9F5] dark:bg-[#121211] focus:outline-none focus:border-[#2563EB]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono uppercase text-[#73736C] dark:text-[#A8A89E] mb-1">
+                  Breve Descrição
+                </label>
+                <textarea
+                  rows={2}
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  className="w-full px-3.5 py-2 text-sm border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-lg bg-[#FAF9F5] dark:bg-[#121211] focus:outline-none focus:border-[#2563EB]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono uppercase text-[#73736C] dark:text-[#A8A89E] mb-1">
+                  Tags (separadas por vírgula)
+                </label>
+                <input
+                  type="text"
+                  value={editTagsInput}
+                  onChange={(e) => setEditTagsInput(e.target.value)}
+                  className="w-full px-3.5 py-2 text-sm border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-lg bg-[#FAF9F5] dark:bg-[#121211] focus:outline-none focus:border-[#2563EB]"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#E8E6DF] dark:border-[#2E2E2A]">
+                <button
+                  type="button"
+                  onClick={() => setEditingProject(null)}
+                  className="px-4 py-2 text-xs text-[#73736C] hover:text-[#181816] dark:hover:text-white"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-xs font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] dark:bg-[#3B82F6] dark:hover:bg-[#2563EB] rounded-lg shadow-2xs"
+                >
+                  Salvar Alterações
                 </button>
               </div>
             </form>

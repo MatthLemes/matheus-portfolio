@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Linkedin, ArrowUpRight, Plus, Trash2, Image, Code2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react';
+import { Linkedin, ArrowUpRight, Plus, Trash2, Pencil, Image, Code2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react';
 import { LinkedInHighlight } from '../types/portfolio';
 import { staggerContainer, cardStaggerItem } from '../utils/animationVariants';
 
@@ -8,6 +8,7 @@ interface LinkedInHighlightsSectionProps {
   highlights: LinkedInHighlight[];
   linkedinProfileUrl: string;
   onAddHighlight: (highlight: Omit<LinkedInHighlight, 'id'>) => void;
+  onEditHighlight?: (highlight: LinkedInHighlight) => void;
   onDeleteHighlight: (id: string) => void;
   onMoveHighlight?: (id: string, direction: 'prev' | 'next') => void;
   isAdmin?: boolean;
@@ -23,12 +24,15 @@ export const LinkedInHighlightsSection: React.FC<LinkedInHighlightsSectionProps>
   highlights,
   linkedinProfileUrl,
   onAddHighlight,
+  onEditHighlight,
   onDeleteHighlight,
   onMoveHighlight,
   isAdmin = false,
 }) => {
   const [activeTab, setActiveTab] = useState<FourTabCategory>('Todas as Publicações');
   const [showAllPosts, setShowAllPosts] = useState(false);
+  
+  // Create Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [snippet, setSnippet] = useState('');
@@ -37,6 +41,16 @@ export const LinkedInHighlightsSection: React.FC<LinkedInHighlightsSectionProps>
   const [embedCode, setEmbedCode] = useState('');
   const [categoryChoice, setCategoryChoice] = useState<FourTabCategory>('Credenciais & Carreira');
   const [date, setDate] = useState('2026');
+
+  // Edit Modal State
+  const [editingHighlight, setEditingHighlight] = useState<LinkedInHighlight | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editSnippet, setEditSnippet] = useState('');
+  const [editUrl, setEditUrl] = useState('');
+  const [editImageUrl, setEditImageUrl] = useState('');
+  const [editEmbedCode, setEditEmbedCode] = useState('');
+  const [editCategory, setEditCategory] = useState<FourTabCategory>('Credenciais & Carreira');
+  const [editDate, setEditDate] = useState('2026');
 
   // Spotlight mouse tracking state per card
   const [hoveredCardId, setHoveredCardId] = useState<string | null>(null);
@@ -53,8 +67,16 @@ export const LinkedInHighlightsSection: React.FC<LinkedInHighlightsSectionProps>
     }));
   };
 
-  // 4 Consolidated Categories Helper
+  // 4 Consolidated Categories Helper - priority given to explicit tag
   const getItemCategory = (item: LinkedInHighlight): FourTabCategory => {
+    if (
+      item.tag === 'Credenciais & Carreira' ||
+      item.tag === 'Palestras & Histórias' ||
+      item.tag === 'Artigos & Insights'
+    ) {
+      return item.tag;
+    }
+
     const text = `${item.title} ${item.snippet || ''} ${item.tag || ''}`.toLowerCase();
 
     if (
@@ -147,6 +169,43 @@ export const LinkedInHighlightsSection: React.FC<LinkedInHighlightsSectionProps>
     setImageUrl('');
     setEmbedCode('');
     setIsModalOpen(false);
+  };
+
+  const handleOpenEdit = (item: LinkedInHighlight) => {
+    setEditingHighlight(item);
+    setEditTitle(item.title);
+    setEditSnippet(item.snippet || '');
+    setEditUrl(item.url || '');
+    setEditImageUrl(item.imageUrl || '');
+    setEditEmbedCode(item.embedCode || '');
+    setEditCategory(getItemCategory(item));
+    setEditDate(item.date || '2026');
+  };
+
+  const handleSaveEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingHighlight || !editTitle) return;
+
+    let finalUrl = editUrl;
+    if (!finalUrl && editEmbedCode) {
+      const match = editEmbedCode.match(/src=["'](.*?)["']/);
+      if (match && match[1]) finalUrl = match[1];
+    }
+
+    if (onEditHighlight) {
+      onEditHighlight({
+        ...editingHighlight,
+        title: editTitle,
+        snippet: editSnippet,
+        url: finalUrl || linkedinProfileUrl,
+        imageUrl: editImageUrl.trim() || undefined,
+        embedCode: editEmbedCode.trim() || undefined,
+        tag: editCategory,
+        date: editDate || '2026',
+      });
+    }
+
+    setEditingHighlight(null);
   };
 
   const getEmbedIframeSrc = (code?: string): string | null => {
@@ -275,7 +334,7 @@ export const LinkedInHighlightsSection: React.FC<LinkedInHighlightsSectionProps>
                       aria-hidden="true"
                     />
 
-                    {/* Admin Reorder & Delete Controls */}
+                    {/* Admin Reorder, Edit & Delete Controls */}
                     {isAdmin && (
                       <div className="absolute top-2.5 right-2.5 z-20 flex items-center gap-1 bg-white/95 dark:bg-[#1C1C1A]/95 backdrop-blur-xs p-1 rounded-full border border-[#E8E6DF] dark:border-[#2E2E2A] shadow-xs">
                         {onMoveHighlight && (
@@ -298,6 +357,13 @@ export const LinkedInHighlightsSection: React.FC<LinkedInHighlightsSectionProps>
                             </button>
                           </>
                         )}
+                        <button
+                          onClick={() => handleOpenEdit(item)}
+                          title="Editar publicação (trocar categoria, texto, link, etc)"
+                          className="p-1 text-[#73736C] dark:text-[#A8A89E] hover:text-[#2563EB] dark:hover:text-[#3B82F6] rounded-full transition-colors"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
                         <button
                           onClick={() => onDeleteHighlight(item.id)}
                           title="Remover destaque"
@@ -409,7 +475,7 @@ export const LinkedInHighlightsSection: React.FC<LinkedInHighlightsSectionProps>
         )}
       </div>
 
-      {/* Modal: Adicionar Destaque */}
+      {/* Modal: Adicionar Novo Destaque */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
           <div
@@ -539,6 +605,137 @@ export const LinkedInHighlightsSection: React.FC<LinkedInHighlightsSectionProps>
                   className="px-4 py-2 text-xs font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] dark:bg-[#3B82F6] dark:hover:bg-[#2563EB] rounded-lg shadow-xs"
                 >
                   Salvar Destaque
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Editar Destaque Existente */}
+      {editingHighlight && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
+          <div
+            className="relative w-full max-w-lg bg-white dark:bg-[#1C1C1A] border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-xl shadow-2xl p-6 my-8 text-[#181816] dark:text-[#F5F5F0]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-[#E8E6DF] dark:border-[#2E2E2A] mb-4">
+              <div className="flex items-center gap-2 text-sm font-semibold">
+                <Pencil className="w-4 h-4 text-[#2563EB] dark:text-[#3B82F6]" />
+                <span>Editar Publicação do LinkedIn</span>
+              </div>
+              <button
+                onClick={() => setEditingHighlight(null)}
+                className="text-xs text-[#73736C] hover:text-[#181816] dark:hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEdit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-mono uppercase text-[#73736C] dark:text-[#A8A89E] mb-1">
+                  Título da Publicação *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-lg bg-[#FAF9F5] dark:bg-[#121211] focus:outline-none focus:border-[#2563EB]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-mono uppercase text-[#2563EB] dark:text-[#3B82F6] mb-1 font-semibold">
+                    Categoria Editorial
+                  </label>
+                  <select
+                    value={editCategory}
+                    onChange={(e) => setEditCategory(e.target.value as FourTabCategory)}
+                    className="w-full px-3 py-2 text-xs border border-[#2563EB] dark:border-[#3B82F6] rounded-lg bg-[#FAF9F5] dark:bg-[#121211] focus:outline-none"
+                  >
+                    <option value="Credenciais & Carreira">Credenciais & Carreira</option>
+                    <option value="Palestras & Histórias">Palestras & Histórias</option>
+                    <option value="Artigos & Insights">Artigos & Insights</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-mono uppercase text-[#73736C] dark:text-[#A8A89E] mb-1">
+                    Ano / Data
+                  </label>
+                  <input
+                    type="text"
+                    value={editDate}
+                    onChange={(e) => setEditDate(e.target.value)}
+                    className="w-full px-3 py-2 text-xs border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-lg bg-[#FAF9F5] dark:bg-[#121211] focus:outline-none focus:border-[#2563EB]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono uppercase text-[#73736C] dark:text-[#A8A89E] mb-1">
+                  URL da Publicação no LinkedIn
+                </label>
+                <input
+                  type="url"
+                  value={editUrl}
+                  onChange={(e) => setEditUrl(e.target.value)}
+                  className="w-full px-3 py-2 text-xs border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-lg bg-[#FAF9F5] dark:bg-[#121211] focus:outline-none focus:border-[#2563EB]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono uppercase text-[#73736C] dark:text-[#A8A89E] mb-1">
+                  URL da Imagem de Prévia (Opcional)
+                </label>
+                <input
+                  type="url"
+                  value={editImageUrl}
+                  onChange={(e) => setEditImageUrl(e.target.value)}
+                  className="w-full px-3 py-2 text-xs border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-lg bg-[#FAF9F5] dark:bg-[#121211] focus:outline-none focus:border-[#2563EB]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono uppercase text-[#73736C] dark:text-[#A8A89E] mb-1 flex items-center gap-1">
+                  <Code2 className="w-3 h-3 text-[#2563EB]" />
+                  <span>Código de Embed do LinkedIn &lt;iframe&gt; (Opcional)</span>
+                </label>
+                <textarea
+                  rows={2}
+                  value={editEmbedCode}
+                  onChange={(e) => setEditEmbedCode(e.target.value)}
+                  className="w-full px-3 py-2 text-xs font-mono border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-lg bg-[#FAF9F5] dark:bg-[#121211] focus:outline-none focus:border-[#2563EB]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono uppercase text-[#73736C] dark:text-[#A8A89E] mb-1">
+                  Resumo / Trecho
+                </label>
+                <textarea
+                  rows={2}
+                  value={editSnippet}
+                  onChange={(e) => setEditSnippet(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-lg bg-[#FAF9F5] dark:bg-[#121211] focus:outline-none focus:border-[#2563EB]"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#E8E6DF] dark:border-[#2E2E2A]">
+                <button
+                  type="button"
+                  onClick={() => setEditingHighlight(null)}
+                  className="px-4 py-2 text-xs text-[#73736C] hover:text-[#181816] dark:hover:text-white"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-xs font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] dark:bg-[#3B82F6] dark:hover:bg-[#2563EB] rounded-lg shadow-xs"
+                >
+                  Salvar Alterações
                 </button>
               </div>
             </form>

@@ -25,7 +25,6 @@ import { EmbeddedProjectsGallery } from './components/EmbeddedProjectsGallery';
 import { LinkedInHighlightsSection } from './components/LinkedInHighlightsSection';
 import { CreativeSpaceSection } from './components/CreativeSpaceSection';
 import { SkillsSection } from './components/SkillsSection';
-import { PromptEngineeringShowcase } from './components/PromptEngineeringShowcase';
 import { ContactSection } from './components/ContactSection';
 import { DesignSystemDrawer } from './components/DesignSystemDrawer';
 import { EditProfileModal } from './components/EditProfileModal';
@@ -230,6 +229,14 @@ export default function App() {
     handleSaveData(updatedData);
   };
 
+  const handleEditProject = (updatedProject: EmbeddedProject) => {
+    const updatedProjects = data.embeddedProjects.map((p) =>
+      p.id === updatedProject.id ? updatedProject : p
+    );
+    const updatedData = { ...data, embeddedProjects: updatedProjects };
+    handleSaveData(updatedData);
+  };
+
   // Handlers for LinkedIn Highlights
   const handleAddLinkedInHighlight = (highlight: Omit<LinkedInHighlight, 'id'>) => {
     const updatedHighlights: LinkedInHighlight[] = [
@@ -240,6 +247,13 @@ export default function App() {
       ...(data.linkedInHighlights || []),
     ];
     const updatedData = { ...data, linkedInHighlights: updatedHighlights };
+    handleSaveData(updatedData);
+  };
+
+  const handleEditLinkedInHighlight = (updatedHighlight: LinkedInHighlight) => {
+    const list = data.linkedInHighlights || [];
+    const updatedList = list.map((h) => (h.id === updatedHighlight.id ? updatedHighlight : h));
+    const updatedData = { ...data, linkedInHighlights: updatedList };
     handleSaveData(updatedData);
   };
 
@@ -276,6 +290,14 @@ export default function App() {
     handleSaveData(updatedData);
   };
 
+  const handleEditSpotify = (updatedItem: SpotifyEmbedItem) => {
+    const updatedList = data.spotifyPlaylists.map((s) =>
+      s.id === updatedItem.id ? updatedItem : s
+    );
+    const updatedData = { ...data, spotifyPlaylists: updatedList };
+    handleSaveData(updatedData);
+  };
+
   const handleDeleteSpotify = (id: string) => {
     const updatedSpotify = data.spotifyPlaylists.filter((s) => s.id !== id);
     const updatedData = { ...data, spotifyPlaylists: updatedSpotify };
@@ -292,6 +314,14 @@ export default function App() {
       ...data.compactPoems,
     ];
     const updatedData = { ...data, compactPoems: updatedPoems };
+    handleSaveData(updatedData);
+  };
+
+  const handleEditPoem = (updatedItem: PoetryCompactItem) => {
+    const updatedList = data.compactPoems.map((p) =>
+      p.id === updatedItem.id ? updatedItem : p
+    );
+    const updatedData = { ...data, compactPoems: updatedList };
     handleSaveData(updatedData);
   };
 
@@ -403,6 +433,7 @@ export default function App() {
             projects={data.embeddedProjects}
             behanceUrl={data.links.behance}
             onAddProject={handleAddProject}
+            onEditProject={handleEditProject}
             onDeleteProject={handleDeleteProject}
             onMoveProject={handleMoveProject}
             isAdmin={isAdmin}
@@ -415,6 +446,7 @@ export default function App() {
             highlights={data.linkedInHighlights || []}
             linkedinProfileUrl={data.links.linkedin}
             onAddHighlight={handleAddLinkedInHighlight}
+            onEditHighlight={handleEditLinkedInHighlight}
             onDeleteHighlight={handleDeleteLinkedInHighlight}
             onMoveHighlight={handleMoveLinkedInHighlight}
             isAdmin={isAdmin}
@@ -428,16 +460,13 @@ export default function App() {
             poems={data.compactPoems}
             mediumUrl={data.links.medium || 'https://medium.com/@matheusribeirolemes15'}
             onAddSpotify={handleAddSpotify}
+            onEditSpotify={handleEditSpotify}
             onDeleteSpotify={handleDeleteSpotify}
             onAddPoem={handleAddPoem}
+            onEditPoem={handleEditPoem}
             onDeletePoem={handleDeletePoem}
             isAdmin={isAdmin}
           />
-        </FadeInReveal>
-
-        {/* 8.1 Showcase Interativo de Engenharia de Prompt & IA Aplicada */}
-        <FadeInReveal>
-          <PromptEngineeringShowcase />
         </FadeInReveal>
 
         {/* 9. Competências & Ferramentas */}

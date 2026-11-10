@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Music2, Feather, Plus, ExternalLink, Trash2, ArrowUpRight } from 'lucide-react';
+import { Music2, Feather, Plus, ExternalLink, Trash2, ArrowUpRight, Pencil } from 'lucide-react';
 import { SpotifyEmbedItem, PoetryCompactItem } from '../types/portfolio';
 import { staggerContainer, staggerItem } from '../utils/animationVariants';
 
@@ -9,8 +9,10 @@ interface CreativeSpaceSectionProps {
   poems: PoetryCompactItem[];
   mediumUrl: string;
   onAddSpotify: (item: Omit<SpotifyEmbedItem, 'id'>) => void;
+  onEditSpotify?: (item: SpotifyEmbedItem) => void;
   onDeleteSpotify: (id: string) => void;
   onAddPoem: (item: Omit<PoetryCompactItem, 'id'>) => void;
+  onEditPoem?: (item: PoetryCompactItem) => void;
   onDeletePoem: (id: string) => void;
   isAdmin?: boolean;
 }
@@ -20,23 +22,38 @@ export const CreativeSpaceSection: React.FC<CreativeSpaceSectionProps> = ({
   poems,
   mediumUrl,
   onAddSpotify,
+  onEditSpotify,
   onDeleteSpotify,
   onAddPoem,
+  onEditPoem,
   onDeletePoem,
   isAdmin = false,
 }) => {
-  // Spotify Modal State
+  // Spotify Create Modal State
   const [isSpotifyModalOpen, setIsSpotifyModalOpen] = useState(false);
   const [spotifyTitle, setSpotifyTitle] = useState('');
   const [spotifySubtitle, setSpotifySubtitle] = useState('');
   const [spotifyInput, setSpotifyInput] = useState('');
 
-  // Poem Modal State
+  // Spotify Edit State
+  const [editingSpotify, setEditingSpotify] = useState<SpotifyEmbedItem | null>(null);
+  const [editSpotifyTitle, setEditSpotifyTitle] = useState('');
+  const [editSpotifySubtitle, setEditSpotifySubtitle] = useState('');
+  const [editSpotifyInput, setEditSpotifyInput] = useState('');
+
+  // Poem Create Modal State
   const [isPoemModalOpen, setIsPoemModalOpen] = useState(false);
   const [poemTitle, setPoemTitle] = useState('');
   const [poemExcerpt, setPoemExcerpt] = useState('');
   const [poemMediumUrl, setPoemMediumUrl] = useState('');
   const [poemDate, setPoemDate] = useState('');
+
+  // Poem Edit State
+  const [editingPoem, setEditingPoem] = useState<PoetryCompactItem | null>(null);
+  const [editPoemTitle, setEditPoemTitle] = useState('');
+  const [editPoemExcerpt, setEditPoemExcerpt] = useState('');
+  const [editPoemMediumUrl, setEditPoemMediumUrl] = useState('');
+  const [editPoemDate, setEditPoemDate] = useState('');
 
   // Convert raw spotify input (URL or iframe) to valid embed src
   const parseSpotifySrc = (raw: string): string => {
@@ -80,6 +97,28 @@ export const CreativeSpaceSection: React.FC<CreativeSpaceSectionProps> = ({
     setIsSpotifyModalOpen(false);
   };
 
+  const startEditSpotify = (item: SpotifyEmbedItem) => {
+    setEditingSpotify(item);
+    setEditSpotifyTitle(item.title);
+    setEditSpotifySubtitle(item.subtitle || '');
+    setEditSpotifyInput(item.embedUrlOrCode);
+  };
+
+  const handleSaveEditSpotify = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingSpotify || !onEditSpotify) return;
+
+    onEditSpotify({
+      ...editingSpotify,
+      title: editSpotifyTitle,
+      subtitle: editSpotifySubtitle || undefined,
+      embedUrlOrCode: editSpotifyInput,
+      externalUrl: editSpotifyInput.startsWith('http') ? editSpotifyInput : editingSpotify.externalUrl,
+    });
+
+    setEditingSpotify(null);
+  };
+
   const handleCreatePoem = (e: React.FormEvent) => {
     e.preventDefault();
     if (!poemTitle || !poemExcerpt) return;
@@ -96,6 +135,29 @@ export const CreativeSpaceSection: React.FC<CreativeSpaceSectionProps> = ({
     setPoemMediumUrl('');
     setPoemDate('');
     setIsPoemModalOpen(false);
+  };
+
+  const startEditPoem = (item: PoetryCompactItem) => {
+    setEditingPoem(item);
+    setEditPoemTitle(item.title);
+    setEditPoemExcerpt(item.excerpt);
+    setEditPoemMediumUrl(item.mediumUrl);
+    setEditPoemDate(item.date || '');
+  };
+
+  const handleSaveEditPoem = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingPoem || !onEditPoem) return;
+
+    onEditPoem({
+      ...editingPoem,
+      title: editPoemTitle,
+      excerpt: editPoemExcerpt,
+      mediumUrl: editPoemMediumUrl || mediumUrl,
+      date: editPoemDate,
+    });
+
+    setEditingPoem(null);
   };
 
   return (
@@ -179,13 +241,22 @@ export const CreativeSpaceSection: React.FC<CreativeSpaceSectionProps> = ({
                           </a>
                         )}
                         {isAdmin && (
-                          <button
-                            onClick={() => onDeleteSpotify(item.id)}
-                            className="text-[#A8A89E] hover:text-red-500 transition-colors"
-                            title="Remover playlist"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                          <>
+                            <button
+                              onClick={() => startEditSpotify(item)}
+                              className="text-[#73736C] hover:text-[#2563EB] dark:hover:text-[#3B82F6] transition-colors p-1 rounded-md hover:bg-[#F4F3EE] dark:hover:bg-[#242422]"
+                              title="Editar playlist"
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => onDeleteSpotify(item.id)}
+                              className="text-[#A8A89E] hover:text-red-500 transition-colors p-1 rounded-md hover:bg-red-500/10"
+                              title="Remover playlist"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </>
                         )}
                       </div>
                     </div>
@@ -246,13 +317,22 @@ export const CreativeSpaceSection: React.FC<CreativeSpaceSectionProps> = ({
                     <div className="flex items-center justify-between text-[11px] font-mono text-[#73736C] dark:text-[#A8A89E] mb-1.5">
                       <span>{poem.date || 'Poesia Autoral'}</span>
                       {isAdmin && (
-                        <button
-                          onClick={() => onDeletePoem(poem.id)}
-                          className="text-[#A8A89E] hover:text-red-500 transition-colors"
-                          title="Remover poesia"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => startEditPoem(poem)}
+                            className="text-[#73736C] hover:text-[#2563EB] dark:hover:text-[#3B82F6] transition-colors p-1 rounded-md hover:bg-[#F4F3EE] dark:hover:bg-[#242422]"
+                            title="Editar poesia"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => onDeletePoem(poem.id)}
+                            className="text-[#A8A89E] hover:text-red-500 transition-colors p-1 rounded-md hover:bg-red-500/10"
+                            title="Remover poesia"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       )}
                     </div>
 
@@ -369,6 +449,85 @@ export const CreativeSpaceSection: React.FC<CreativeSpaceSectionProps> = ({
         </div>
       )}
 
+      {/* Modal: Editar Playlist do Spotify */}
+      {editingSpotify && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
+          <div
+            className="relative w-full max-w-md bg-white dark:bg-[#1C1C1A] border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-xl shadow-2xl p-6 my-8 text-[#181816] dark:text-[#F5F5F0]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-[#E8E6DF] dark:border-[#2E2E2A] mb-4">
+              <div className="flex items-center gap-2 text-sm font-semibold">
+                <Pencil className="w-4 h-4 text-[#2563EB] dark:text-[#3B82F6]" />
+                <span>Editar Playlist do Spotify</span>
+              </div>
+              <button
+                onClick={() => setEditingSpotify(null)}
+                className="text-xs text-[#73736C] hover:text-[#181816] dark:hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEditSpotify} className="space-y-4">
+              <div>
+                <label className="block text-xs font-mono uppercase text-[#73736C] dark:text-[#A8A89E] mb-1">
+                  Título da Playlist *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editSpotifyTitle}
+                  onChange={(e) => setEditSpotifyTitle(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-lg bg-[#FAF9F5] dark:bg-[#121211] focus:outline-none focus:border-[#2563EB]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono uppercase text-[#73736C] dark:text-[#A8A89E] mb-1">
+                  Subtítulo / Descrição Curta
+                </label>
+                <input
+                  type="text"
+                  value={editSpotifySubtitle}
+                  onChange={(e) => setEditSpotifySubtitle(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-lg bg-[#FAF9F5] dark:bg-[#121211] focus:outline-none focus:border-[#2563EB]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono uppercase text-[#73736C] dark:text-[#A8A89E] mb-1">
+                  Link ou Código Embed do Spotify *
+                </label>
+                <textarea
+                  required
+                  rows={3}
+                  value={editSpotifyInput}
+                  onChange={(e) => setEditSpotifyInput(e.target.value)}
+                  className="w-full px-3 py-2 text-xs font-mono border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-lg bg-[#FAF9F5] dark:bg-[#121211] focus:outline-none focus:border-[#2563EB]"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#E8E6DF] dark:border-[#2E2E2A]">
+                <button
+                  type="button"
+                  onClick={() => setEditingSpotify(null)}
+                  className="px-4 py-2 text-xs text-[#73736C] hover:text-[#181816] dark:hover:text-white"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-xs font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] dark:bg-[#3B82F6] dark:hover:bg-[#2563EB] rounded-lg shadow-xs"
+                >
+                  Salvar Alterações
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Modal: Adicionar Poesia */}
       {isPoemModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
@@ -450,6 +609,99 @@ export const CreativeSpaceSection: React.FC<CreativeSpaceSectionProps> = ({
           </div>
         </div>
       )}
+
+      {/* Modal: Editar Poesia */}
+      {editingPoem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
+          <div
+            className="relative w-full max-w-md bg-white dark:bg-[#1C1C1A] border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-xl shadow-2xl p-6 my-8 text-[#181816] dark:text-[#F5F5F0]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-[#E8E6DF] dark:border-[#2E2E2A] mb-4">
+              <div className="flex items-center gap-2 text-sm font-semibold">
+                <Pencil className="w-4 h-4 text-[#2563EB] dark:text-[#3B82F6]" />
+                <span>Editar Poesia do Medium</span>
+              </div>
+              <button
+                onClick={() => setEditingPoem(null)}
+                className="text-xs text-[#73736C] hover:text-[#181816] dark:hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEditPoem} className="space-y-4">
+              <div>
+                <label className="block text-xs font-mono uppercase text-[#73736C] dark:text-[#A8A89E] mb-1">
+                  Título da Poesia *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editPoemTitle}
+                  onChange={(e) => setEditPoemTitle(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-lg bg-[#FAF9F5] dark:bg-[#121211] focus:outline-none focus:border-[#2563EB]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono uppercase text-[#73736C] dark:text-[#A8A89E] mb-1">
+                  Trecho ou Estrofe em Destaque *
+                </label>
+                <textarea
+                  required
+                  rows={3}
+                  value={editPoemExcerpt}
+                  onChange={(e) => setEditPoemExcerpt(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-lg bg-[#FAF9F5] dark:bg-[#121211] focus:outline-none focus:border-[#2563EB]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono uppercase text-[#73736C] dark:text-[#A8A89E] mb-1">
+                  Link da Publicação no Medium
+                </label>
+                <input
+                  type="url"
+                  value={editPoemMediumUrl}
+                  onChange={(e) => setEditPoemMediumUrl(e.target.value)}
+                  className="w-full px-3 py-2 text-xs border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-lg bg-[#FAF9F5] dark:bg-[#121211] focus:outline-none focus:border-[#2563EB]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono uppercase text-[#73736C] dark:text-[#A8A89E] mb-1">
+                  Data ou Época
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ex: 2024 · Reflexões Autorais"
+                  value={editPoemDate}
+                  onChange={(e) => setEditPoemDate(e.target.value)}
+                  className="w-full px-3 py-2 text-xs border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-lg bg-[#FAF9F5] dark:bg-[#121211] focus:outline-none focus:border-[#2563EB]"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#E8E6DF] dark:border-[#2E2E2A]">
+                <button
+                  type="button"
+                  onClick={() => setEditingPoem(null)}
+                  className="px-4 py-2 text-xs text-[#73736C] hover:text-[#181816] dark:hover:text-white"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-xs font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] dark:bg-[#3B82F6] dark:hover:bg-[#2563EB] rounded-lg shadow-xs"
+                >
+                  Salvar Alterações
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </section>
   );
 };
+
