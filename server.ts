@@ -24,6 +24,17 @@ async function startServer() {
 
   app.use(express.json({ limit: '10mb' }));
 
+  // Enable CORS for iframe and cross-origin environments
+  app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Cache-Control');
+    if (req.method === 'OPTIONS') {
+      return res.sendStatus(200);
+    }
+    next();
+  });
+
   // Endpoint to get freshest portfolio data directly
   app.get('/api/portfolio-data', (_req, res) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');

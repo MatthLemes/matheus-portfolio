@@ -31,9 +31,10 @@ interface EditProfileModalProps {
   onClose: () => void;
   onSave: (newData: PortfolioData) => void;
   onReset: () => void;
+  initialTab?: TabKey;
 }
 
-type TabKey = 'perfil' | 'experiencias' | 'formacao' | 'conquistas' | 'skills';
+export type TabKey = 'perfil' | 'experiencias' | 'formacao' | 'conquistas' | 'skills';
 
 export const EditProfileModal: React.FC<EditProfileModalProps> = ({
   data,
@@ -41,8 +42,9 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
   onClose,
   onSave,
   onReset,
+  initialTab = 'perfil',
 }) => {
-  const [activeTab, setActiveTab] = useState<TabKey>('perfil');
+  const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
   const [formData, setFormData] = useState<PortfolioData>(data);
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -50,6 +52,12 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
   useEffect(() => {
     setFormData(data);
   }, [data, isOpen]);
+
+  useEffect(() => {
+    if (initialTab && isOpen) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab, isOpen]);
 
   if (!isOpen) return null;
 

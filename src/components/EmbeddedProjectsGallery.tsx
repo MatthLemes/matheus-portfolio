@@ -1,6 +1,17 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, ExternalLink, Trash2, Pencil, Code2, Layers, Settings2, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+  Plus,
+  ExternalLink,
+  Trash2,
+  Pencil,
+  Layers,
+  Settings2,
+  Eye,
+  ChevronLeft,
+  ChevronRight,
+  ArrowUpRight,
+} from 'lucide-react';
 import { EmbeddedProject } from '../types/portfolio';
 import { staggerContainer, cardStaggerItem } from '../utils/animationVariants';
 
@@ -10,9 +21,42 @@ interface EmbeddedProjectsGalleryProps {
   onAddProject: (project: Omit<EmbeddedProject, 'id'>, insertAfterId?: string) => void;
   onEditProject?: (project: EmbeddedProject) => void;
   onDeleteProject: (id: string) => void;
-  onMoveProject?: (id: string, direction: 'prev' | 'next') => void;
+  onMoveProject?: (
+    id: string,
+    direction: 'prev' | 'next',
+    currentViewIds?: string[]
+  ) => void;
   isAdmin?: boolean;
 }
+
+export const getBehanceGalleryUrl = (
+  project: EmbeddedProject,
+  defaultBehanceUrl: string
+): string => {
+  if (project.externalUrl && project.externalUrl.includes('behance.net/gallery/')) {
+    return project.externalUrl;
+  }
+  const embedMatch = (project.embedCodeOrUrl + ' ' + (project.externalUrl || '')).match(
+    /embed\/project\/(\d+)/
+  );
+  if (embedMatch && embedMatch[1]) {
+    return `https://www.behance.net/gallery/${embedMatch[1]}`;
+  }
+  const galleryMatch = (project.embedCodeOrUrl + ' ' + (project.externalUrl || '')).match(
+    /behance\.net\/gallery\/(\d+)/
+  );
+  if (galleryMatch && galleryMatch[1]) {
+    return `https://www.behance.net/gallery/${galleryMatch[1]}`;
+  }
+  if (
+    project.externalUrl &&
+    project.externalUrl.startsWith('http') &&
+    !project.externalUrl.includes('embed')
+  ) {
+    return project.externalUrl;
+  }
+  return defaultBehanceUrl || 'https://www.behance.net/matheuslemes1';
+};
 
 export const EmbeddedProjectsGallery: React.FC<EmbeddedProjectsGalleryProps> = ({
   projects,
@@ -24,12 +68,13 @@ export const EmbeddedProjectsGallery: React.FC<EmbeddedProjectsGalleryProps> = (
   isAdmin = false,
 }) => {
   const [curatorMode, setCuratorMode] = useState(false);
-  
+
   // Create Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('Identidade Visual');
   const [embedCodeOrUrl, setEmbedCodeOrUrl] = useState('');
+  const [directUrl, setDirectUrl] = useState('');
   const [description, setDescription] = useState('');
   const [tagsInput, setTagsInput] = useState('');
   const [insertPosition, setInsertPosition] = useState<string>('after-logomarca');
@@ -39,8 +84,27 @@ export const EmbeddedProjectsGallery: React.FC<EmbeddedProjectsGalleryProps> = (
   const [editTitle, setEditTitle] = useState('');
   const [editCategory, setEditCategory] = useState('Identidade Visual');
   const [editEmbedCodeOrUrl, setEditEmbedCodeOrUrl] = useState('');
+  const [editDirectUrl, setEditDirectUrl] = useState('');
   const [editDescription, setEditDescription] = useState('');
   const [editTagsInput, setEditTagsInput] = useState('');
+
+  const resolveExternalUrl = (manualUrl: string, embedCode: string): string => {
+    if (manualUrl.trim().startsWith('http')) {
+      return manualUrl.trim();
+    }
+    const match = embedCode.match(/embed\/project\/(\d+)/);
+    if (match && match[1]) {
+      return `https://www.behance.net/gallery/${match[1]}`;
+    }
+    const galleryMatch = embedCode.match(/behance\.net\/gallery\/(\d+)/);
+    if (galleryMatch && galleryMatch[1]) {
+      return `https://www.behance.net/gallery/${galleryMatch[1]}`;
+    }
+    if (embedCode.startsWith('http') && !embedCode.includes('embed')) {
+      return embedCode;
+    }
+    return behanceUrl;
+  };
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,15 +114,7 @@ export const EmbeddedProjectsGallery: React.FC<EmbeddedProjectsGalleryProps> = (
       ? tagsInput.split(',').map((t) => t.trim()).filter(Boolean)
       : ['Behance', category];
 
-    let externalUrl = behanceUrl;
-    if (embedCodeOrUrl.startsWith('http')) {
-      externalUrl = embedCodeOrUrl;
-    } else {
-      const srcMatch = embedCodeOrUrl.match(/src=["'](.*?)["']/);
-      if (srcMatch && srcMatch[1]) {
-        externalUrl = srcMatch[1];
-      }
-    }
+    const externalUrl = resolveExternalUrl(directUrl, embedCodeOrUrl);
 
     onAddProject(
       {
@@ -74,6 +130,7 @@ export const EmbeddedProjectsGallery: React.FC<EmbeddedProjectsGalleryProps> = (
 
     setTitle('');
     setEmbedCodeOrUrl('');
+    setDirectUrl('');
     setDescription('');
     setTagsInput('');
     setIsModalOpen(false);
@@ -84,6 +141,7 @@ export const EmbeddedProjectsGallery: React.FC<EmbeddedProjectsGalleryProps> = (
     setEditTitle(project.title);
     setEditCategory(project.category || 'Identidade Visual');
     setEditEmbedCodeOrUrl(project.embedCodeOrUrl || '');
+    setEditDirectUrl(project.externalUrl || getBehanceGalleryUrl(project, behanceUrl));
     setEditDescription(project.description || '');
     setEditTagsInput((project.tags || []).join(', '));
   };
@@ -96,15 +154,7 @@ export const EmbeddedProjectsGallery: React.FC<EmbeddedProjectsGalleryProps> = (
       ? editTagsInput.split(',').map((t) => t.trim()).filter(Boolean)
       : ['Behance', editCategory];
 
-    let externalUrl = behanceUrl;
-    if (editEmbedCodeOrUrl.startsWith('http')) {
-      externalUrl = editEmbedCodeOrUrl;
-    } else {
-      const srcMatch = editEmbedCodeOrUrl.match(/src=["'](.*?)["']/);
-      if (srcMatch && srcMatch[1]) {
-        externalUrl = srcMatch[1];
-      }
-    }
+    const externalUrl = resolveExternalUrl(editDirectUrl, editEmbedCodeOrUrl);
 
     if (onEditProject) {
       onEditProject({
@@ -130,12 +180,12 @@ export const EmbeddedProjectsGallery: React.FC<EmbeddedProjectsGalleryProps> = (
 
       if (iframeSrc) {
         return (
-          <div className="relative w-full max-w-[404px] mx-auto min-h-[316px] flex items-center justify-center">
+          <div className="relative w-full aspect-4/3 min-h-[300px] sm:min-h-[320px] flex items-center justify-center overflow-hidden rounded-xl bg-[#F4F3EE] dark:bg-[#121211]">
             <iframe
               src={iframeSrc}
               height="316"
               width="404"
-              className="max-w-full border-0 mx-auto rounded-lg shadow-2xs"
+              className="w-full h-full border-0 mx-auto rounded-xl shadow-2xs"
               allowFullScreen
               loading="lazy"
               referrerPolicy="strict-origin-when-cross-origin"
@@ -158,7 +208,7 @@ export const EmbeddedProjectsGallery: React.FC<EmbeddedProjectsGalleryProps> = (
           {project.description || 'Projeto visual e estudo de caso hospedado no Behance.'}
         </p>
         <a
-          href={project.externalUrl || project.embedCodeOrUrl}
+          href={getBehanceGalleryUrl(project, behanceUrl)}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] dark:bg-[#3B82F6] dark:hover:bg-[#2563EB] transition-colors rounded-lg shadow-2xs"
@@ -255,57 +305,105 @@ export const EmbeddedProjectsGallery: React.FC<EmbeddedProjectsGalleryProps> = (
             projects.length > 1 ? 'md:grid-cols-2' : 'max-w-xl mx-auto'
           } justify-start md:justify-center pb-3 md:pb-0`}
         >
-          {projects.map((project, index) => (
-            <motion.div
-              key={project.id}
-              variants={cardStaggerItem}
-              className="magnetic-card w-[88vw] sm:w-[380px] md:w-auto shrink-0 md:shrink snap-center group bg-white dark:bg-[#1C1C1A] border border-[#E8E6DF] dark:border-[#2E2E2A] hover:border-[#2563EB] dark:hover:border-[#3B82F6] rounded-2xl p-4 flex flex-col items-center justify-center transition-all duration-120 shadow-2xs hover:shadow-md relative"
-            >
-              {curatorMode && (
-                <div className="absolute top-3 right-3 z-10 flex items-center gap-1 bg-white/95 dark:bg-[#1C1C1A]/95 backdrop-blur-xs p-1 rounded-full border border-[#E8E6DF] dark:border-[#2E2E2A] shadow-xs">
-                  {onMoveProject && (
-                    <>
-                      <button
-                        onClick={() => onMoveProject(project.id, 'prev')}
-                        disabled={index === 0}
-                        title="Mover para a esquerda"
-                        className="p-1 text-[#73736C] dark:text-[#A8A89E] hover:text-[#2563EB] dark:hover:text-[#3B82F6] disabled:opacity-30 rounded-full transition-colors"
-                      >
-                        <ChevronLeft className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={() => onMoveProject(project.id, 'next')}
-                        disabled={index === projects.length - 1}
-                        title="Mover para a direita"
-                        className="p-1 text-[#73736C] dark:text-[#A8A89E] hover:text-[#2563EB] dark:hover:text-[#3B82F6] disabled:opacity-30 rounded-full transition-colors"
-                      >
-                        <ChevronRight className="w-3.5 h-3.5" />
-                      </button>
-                    </>
-                  )}
-                  <button
-                    onClick={() => handleOpenEdit(project)}
-                    title="Editar informações do projeto"
-                    className="p-1 text-[#73736C] dark:text-[#A8A89E] hover:text-[#2563EB] dark:hover:text-[#3B82F6] rounded-full transition-colors"
-                  >
-                    <Pencil className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={() => onDeleteProject(project.id)}
-                    title="Remover projeto"
-                    className="p-1 text-[#A8A89E] hover:text-red-500 rounded-full transition-colors"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              )}
+          {projects.map((project, index) => {
+            const projectUrl = getBehanceGalleryUrl(project, behanceUrl);
 
-              {/* Behance Embed Viewport */}
-              <div className="w-full flex justify-center items-center">
-                {renderEmbedContent(project)}
-              </div>
-            </motion.div>
-          ))}
+            return (
+              <motion.div
+                key={project.id}
+                variants={cardStaggerItem}
+                className="magnetic-card w-[88vw] sm:w-[380px] md:w-auto shrink-0 md:shrink snap-center group bg-white dark:bg-[#1C1C1A] border border-[#E8E6DF] dark:border-[#2E2E2A] hover:border-[#2563EB] dark:hover:border-[#3B82F6] rounded-2xl p-4 sm:p-5 flex flex-col justify-between transition-all duration-120 shadow-2xs hover:shadow-md relative"
+              >
+                {curatorMode && (
+                  <div className="absolute top-3 right-3 z-20 flex items-center gap-1 bg-white/95 dark:bg-[#1C1C1A]/95 backdrop-blur-xs p-1 rounded-full border border-[#E8E6DF] dark:border-[#2E2E2A] shadow-xs">
+                    {onMoveProject && (
+                      <>
+                        <button
+                          onClick={() =>
+                            onMoveProject(
+                              project.id,
+                              'prev',
+                              projects.map((p) => p.id)
+                            )
+                          }
+                          disabled={index === 0}
+                          title="Mover para a esquerda"
+                          className="p-1 text-[#73736C] dark:text-[#A8A89E] hover:text-[#2563EB] dark:hover:text-[#3B82F6] disabled:opacity-30 rounded-full transition-colors"
+                        >
+                          <ChevronLeft className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() =>
+                            onMoveProject(
+                              project.id,
+                              'next',
+                              projects.map((p) => p.id)
+                            )
+                          }
+                          disabled={index === projects.length - 1}
+                          title="Mover para a direita"
+                          className="p-1 text-[#73736C] dark:text-[#A8A89E] hover:text-[#2563EB] dark:hover:text-[#3B82F6] disabled:opacity-30 rounded-full transition-colors"
+                        >
+                          <ChevronRight className="w-3.5 h-3.5" />
+                        </button>
+                      </>
+                    )}
+                    <button
+                      onClick={() => handleOpenEdit(project)}
+                      title="Editar informações do projeto"
+                      className="p-1 text-[#73736C] dark:text-[#A8A89E] hover:text-[#2563EB] dark:hover:text-[#3B82F6] rounded-full transition-colors"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => onDeleteProject(project.id)}
+                      title="Remover projeto"
+                      className="p-1 text-[#A8A89E] hover:text-red-500 rounded-full transition-colors"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
+
+                {/* Card Header: Title & Category Zero-Pill */}
+                <div className="w-full flex items-start justify-between gap-3 mb-3.5 px-0.5">
+                  <div className="truncate">
+                    <h3 className="text-base font-semibold font-sans text-[#181816] dark:text-[#F5F5F0] truncate group-hover:text-[#2563EB] dark:group-hover:text-[#3B82F6] transition-colors leading-snug">
+                      {project.title}
+                    </h3>
+                    <div className="text-[11px] font-mono text-[#73736C] dark:text-[#A8A89E] flex items-center gap-1.5 mt-1">
+                      <span className="text-[#2563EB] dark:text-[#3B82F6] font-medium">
+                        {project.category || 'Identidade Visual'}
+                      </span>
+                      <span>·</span>
+                      <span>Behance</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Behance Embed Viewport */}
+                <div className="w-full flex justify-center items-center overflow-hidden rounded-xl bg-[#F4F3EE] dark:bg-[#151514]">
+                  {renderEmbedContent(project)}
+                </div>
+
+                {/* Card Footer: Direct Link to Behance */}
+                <div className="w-full flex items-center justify-between pt-3.5 mt-3.5 border-t border-[#E8E6DF] dark:border-[#2E2E2A] text-xs">
+                  <span className="text-[11px] font-mono text-[#73736C] dark:text-[#A8A89E]">
+                    Estudo de Caso
+                  </span>
+                  <a
+                    href={projectUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 font-mono font-medium text-[#2563EB] dark:text-[#3B82F6] hover:underline"
+                  >
+                    <span>Ver no Behance</span>
+                    <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                  </a>
+                </div>
+              </motion.div>
+            );
+          })}
         </motion.div>
       </div>
 
@@ -354,6 +452,7 @@ export const EmbeddedProjectsGallery: React.FC<EmbeddedProjectsGalleryProps> = (
                   className="w-full px-3.5 py-2 text-sm border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-lg bg-[#FAF9F5] dark:bg-[#121211] focus:outline-none focus:border-[#2563EB]"
                 >
                   <option value="Identidade Visual">Identidade Visual</option>
+                  <option value="Identidade Visual & UX">Identidade Visual & UX</option>
                   <option value="Design Gráfico">Design Gráfico</option>
                   <option value="UX/UI & Interfaces">UX/UI & Interfaces</option>
                   <option value="Design Editorial">Design Editorial</option>
@@ -373,6 +472,19 @@ export const EmbeddedProjectsGallery: React.FC<EmbeddedProjectsGalleryProps> = (
                   value={embedCodeOrUrl}
                   onChange={(e) => setEmbedCodeOrUrl(e.target.value)}
                   className="w-full px-3.5 py-2 text-xs sm:text-sm font-mono border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-lg bg-[#FAF9F5] dark:bg-[#121211] focus:outline-none focus:border-[#2563EB]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono uppercase text-[#73736C] dark:text-[#A8A89E] mb-1">
+                  Link Direto da Galeria no Behance (Opcional - preenchido automaticamente)
+                </label>
+                <input
+                  type="url"
+                  placeholder="https://www.behance.net/gallery/..."
+                  value={directUrl}
+                  onChange={(e) => setDirectUrl(e.target.value)}
+                  className="w-full px-3.5 py-2 text-xs sm:text-sm border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-lg bg-[#FAF9F5] dark:bg-[#121211] focus:outline-none focus:border-[#2563EB]"
                 />
               </div>
 
@@ -472,6 +584,7 @@ export const EmbeddedProjectsGallery: React.FC<EmbeddedProjectsGalleryProps> = (
                   className="w-full px-3.5 py-2 text-sm border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-lg bg-[#FAF9F5] dark:bg-[#121211] focus:outline-none focus:border-[#2563EB]"
                 >
                   <option value="Identidade Visual">Identidade Visual</option>
+                  <option value="Identidade Visual & UX">Identidade Visual & UX</option>
                   <option value="Design Gráfico">Design Gráfico</option>
                   <option value="UX/UI & Interfaces">UX/UI & Interfaces</option>
                   <option value="Design Editorial">Design Editorial</option>
@@ -490,6 +603,19 @@ export const EmbeddedProjectsGallery: React.FC<EmbeddedProjectsGalleryProps> = (
                   value={editEmbedCodeOrUrl}
                   onChange={(e) => setEditEmbedCodeOrUrl(e.target.value)}
                   className="w-full px-3.5 py-2 text-xs sm:text-sm font-mono border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-lg bg-[#FAF9F5] dark:bg-[#121211] focus:outline-none focus:border-[#2563EB]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono uppercase text-[#73736C] dark:text-[#A8A89E] mb-1">
+                  Link Direto da Galeria no Behance (URL da Galeria)
+                </label>
+                <input
+                  type="url"
+                  placeholder="https://www.behance.net/gallery/..."
+                  value={editDirectUrl}
+                  onChange={(e) => setEditDirectUrl(e.target.value)}
+                  className="w-full px-3.5 py-2 text-xs sm:text-sm border border-[#E8E6DF] dark:border-[#2E2E2A] rounded-lg bg-[#FAF9F5] dark:bg-[#121211] focus:outline-none focus:border-[#2563EB]"
                 />
               </div>
 

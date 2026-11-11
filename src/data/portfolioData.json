@@ -276,16 +276,17 @@
       ]
     },
     {
+      "id": "emb-1791916030852",
       "title": "UX/UI Case",
-      "category": "Identidade Visual",
+      "category": "Identidade Visual & UX",
       "embedCodeOrUrl": "<iframe src=\"https://www.behance.net/embed/project/256424525?ilo0=1\" height=\"316\" width=\"404\" allowfullscreen lazyload frameborder=\"0\" allow=\"clipboard-write\" refererPolicy=\"strict-origin-when-cross-origin\"></iframe>",
-      "description": "",
-      "externalUrl": "https://www.behance.net/embed/project/256424525?ilo0=1",
+      "description": "Estudo de caso de UX/UI publicado no Behance.",
+      "externalUrl": "https://www.behance.net/gallery/256424525",
       "tags": [
         "Behance",
+        "UX/UI",
         "Identidade Visual"
-      ],
-      "id": "emb-1791916030852"
+      ]
     },
     {
       "id": "emb-2",
@@ -347,6 +348,13 @@
       "date": "Recente"
     },
     {
+      "id": "poem-depois-do-guincho",
+      "title": "Depois do Guincho",
+      "excerpt": "\"Reflexões e versos sobre o tempo, a partida e o recomeço.\"",
+      "mediumUrl": "https://medium.com/@lemure",
+      "date": "2025"
+    },
+    {
       "id": "poem-1790462001169",
       "title": "Ocaso e o acaso",
       "excerpt": "\"Me visto da classe de bicho\nQue não cabe em gaiola\nQue se olha livre, o poeta poente\nSem ordem, sem classe, oxente\"",
@@ -373,7 +381,7 @@
       "id": "li-1790460578595",
       "title": "Carreira de Excelência - Na Prática",
       "snippet": "Bolsista | falamos sobre protagonismo, locus de controle, networking, desenvolvimento e ambição",
-      "url": "https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7508143077077909505?collapsed=1",
+      "url": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7508143077077909505/",
       "embedCode": "<iframe src=\"https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7508143077077909505?collapsed=1\" height=\"566\" width=\"504\" frameborder=\"0\" allowfullscreen=\"\" title=\"Publicação incorporada\"></iframe>",
       "tag": "Eventos de Carreira",
       "date": "2026"
@@ -382,7 +390,7 @@
       "id": "li-1790460477555",
       "title": "Certificado Harvard University",
       "snippet": "Bolsista do curso de retórica e comunicação persuasiva.",
-      "url": "https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7500902587936768000?collapsed=1",
+      "url": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7500902587936768000/",
       "embedCode": "<iframe src=\"https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7500902587936768000?collapsed=1\" height=\"566\" width=\"504\" frameborder=\"0\" allowfullscreen=\"\" title=\"Publicação incorporada\"></iframe>",
       "tag": "Certificações & Credenciais",
       "date": "2026"
@@ -391,7 +399,7 @@
       "id": "li-1790460400522",
       "title": "Conferência Na Prática",
       "snippet": "Selecionado para um evento com exposição para grandes empresas",
-      "url": "https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7492734640831606784?collapsed=1",
+      "url": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7492734640831606784/",
       "embedCode": "<iframe src=\"https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7492734640831606784?collapsed=1\" height=\"627\" width=\"504\" frameborder=\"0\" allowfullscreen=\"\" title=\"Publicação incorporada\"></iframe>",
       "tag": "Eventos de Carreira",
       "date": "2026"
@@ -400,7 +408,7 @@
       "id": "li-1790460244154",
       "title": "Certificação Google Analytics",
       "snippet": "Certificação Profissional do Google em Análise de Métricas.",
-      "url": "https://www.linkedin.com/embed/feed/update/urn:li:share:7394728542279729153?collapsed=1",
+      "url": "https://www.linkedin.com/feed/update/urn:li:share:7394728542279729153/",
       "embedCode": "<iframe src=\"https://www.linkedin.com/embed/feed/update/urn:li:share:7394728542279729153?collapsed=1\" height=\"574\" width=\"504\" frameborder=\"0\" allowfullscreen=\"\" title=\"Publicação incorporada\"></iframe>",
       "tag": "Certificações & Credenciais",
       "date": "2025"
@@ -409,7 +417,7 @@
       "id": "li-1790460077507",
       "title": "Palestra para jovens do interior",
       "snippet": "Compartilhamento de trajetórias e incentivo à qualificação e tecnologia.",
-      "url": "https://www.linkedin.com/embed/feed/update/urn:li:share:7376760098469269504?collapsed=1",
+      "url": "https://www.linkedin.com/feed/update/urn:li:share:7376760098469269504/",
       "embedCode": "<iframe src=\"https://www.linkedin.com/embed/feed/update/urn:li:share:7376760098469269504?collapsed=1\" height=\"547\" width=\"504\" frameborder=\"0\" allowfullscreen=\"\" title=\"Publicação incorporada\"></iframe>",
       "tag": "Palestras",
       "date": "2025"
@@ -418,7 +426,7 @@
       "id": "li-1790459984668",
       "title": "Uma história que moldou minha carreira",
       "snippet": "Reflexão sobre persistência, superação e desenvolvimento profissional.",
-      "url": "https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7399535967675592705?collapsed=1",
+      "url": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7399535967675592705/",
       "embedCode": "<iframe src=\"https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7399535967675592705?collapsed=1\" height=\"566\" width=\"504\" frameborder=\"0\" allowfullscreen=\"\" title=\"Publicação incorporada\"></iframe>",
       "tag": "Histórias & Trajetória",
       "date": "2019 - 2022"

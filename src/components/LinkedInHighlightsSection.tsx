@@ -10,7 +10,11 @@ interface LinkedInHighlightsSectionProps {
   onAddHighlight: (highlight: Omit<LinkedInHighlight, 'id'>) => void;
   onEditHighlight?: (highlight: LinkedInHighlight) => void;
   onDeleteHighlight: (id: string) => void;
-  onMoveHighlight?: (id: string, direction: 'prev' | 'next') => void;
+  onMoveHighlight?: (
+    id: string,
+    direction: 'prev' | 'next',
+    currentViewIds?: string[]
+  ) => void;
   isAdmin?: boolean;
 }
 
@@ -143,6 +147,14 @@ export const LinkedInHighlightsSection: React.FC<LinkedInHighlightsSectionProps>
     return filteredHighlights;
   }, [filteredHighlights, activeTab, showAllPosts]);
 
+  const cleanLinkedInUrl = (rawUrl?: string): string => {
+    if (!rawUrl) return linkedinProfileUrl;
+    if (rawUrl.includes('/embed/feed/update/')) {
+      return rawUrl.replace('/embed/feed/update/', '/feed/update/').split('?')[0] + '/';
+    }
+    return rawUrl;
+  };
+
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title) return;
@@ -156,7 +168,7 @@ export const LinkedInHighlightsSection: React.FC<LinkedInHighlightsSectionProps>
     onAddHighlight({
       title,
       snippet,
-      url: finalUrl || linkedinProfileUrl,
+      url: cleanLinkedInUrl(finalUrl),
       imageUrl: imageUrl.trim() || undefined,
       embedCode: embedCode.trim() || undefined,
       tag: categoryChoice,
@@ -175,7 +187,7 @@ export const LinkedInHighlightsSection: React.FC<LinkedInHighlightsSectionProps>
     setEditingHighlight(item);
     setEditTitle(item.title);
     setEditSnippet(item.snippet || '');
-    setEditUrl(item.url || '');
+    setEditUrl(cleanLinkedInUrl(item.url || ''));
     setEditImageUrl(item.imageUrl || '');
     setEditEmbedCode(item.embedCode || '');
     setEditCategory(getItemCategory(item));
@@ -197,7 +209,7 @@ export const LinkedInHighlightsSection: React.FC<LinkedInHighlightsSectionProps>
         ...editingHighlight,
         title: editTitle,
         snippet: editSnippet,
-        url: finalUrl || linkedinProfileUrl,
+        url: cleanLinkedInUrl(finalUrl),
         imageUrl: editImageUrl.trim() || undefined,
         embedCode: editEmbedCode.trim() || undefined,
         tag: editCategory,
@@ -340,7 +352,13 @@ export const LinkedInHighlightsSection: React.FC<LinkedInHighlightsSectionProps>
                         {onMoveHighlight && (
                           <>
                             <button
-                              onClick={() => onMoveHighlight(item.id, 'prev')}
+                              onClick={() =>
+                                onMoveHighlight(
+                                  item.id,
+                                  'prev',
+                                  displayedHighlights.map((h) => h.id)
+                                )
+                              }
                               disabled={index === 0}
                               title="Mover para a esquerda"
                               className="p-1 text-[#73736C] dark:text-[#A8A89E] hover:text-[#2563EB] dark:hover:text-[#3B82F6] disabled:opacity-30 rounded-full transition-colors"
@@ -348,8 +366,14 @@ export const LinkedInHighlightsSection: React.FC<LinkedInHighlightsSectionProps>
                               <ChevronLeft className="w-3.5 h-3.5" />
                             </button>
                             <button
-                              onClick={() => onMoveHighlight(item.id, 'next')}
-                              disabled={index === highlights.length - 1}
+                              onClick={() =>
+                                onMoveHighlight(
+                                  item.id,
+                                  'next',
+                                  displayedHighlights.map((h) => h.id)
+                                )
+                              }
+                              disabled={index === displayedHighlights.length - 1}
                               title="Mover para a direita"
                               className="p-1 text-[#73736C] dark:text-[#A8A89E] hover:text-[#2563EB] dark:hover:text-[#3B82F6] disabled:opacity-30 rounded-full transition-colors"
                             >
@@ -434,7 +458,7 @@ export const LinkedInHighlightsSection: React.FC<LinkedInHighlightsSectionProps>
                       </span>
 
                       <a
-                        href={item.url}
+                        href={cleanLinkedInUrl(item.url)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1 font-mono font-medium text-[#2563EB] dark:text-[#3B82F6] hover:underline"
