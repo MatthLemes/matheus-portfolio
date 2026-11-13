@@ -12,6 +12,7 @@ import {
   SpotifyEmbedItem,
   PoetryCompactItem,
   LinkedInHighlight,
+  AchievementItem,
 } from './types/portfolio';
 import { useTheme } from './hooks/useTheme';
 import { Navbar } from './components/Navbar';
@@ -217,40 +218,77 @@ export default function App() {
       .then((serverData: PortfolioData) => {
         if (serverData && serverData.name) {
           setData((prevData) => {
-            // Reconcile projects: ensure items added locally or on server are combined
-            const serverProjectIds = new Set(serverData.embeddedProjects.map((p) => p.id));
-            const localOnlyProjects = (prevData.embeddedProjects || []).filter(
-              (p) => !serverProjectIds.has(p.id)
+            // Local ordering and user additions ALWAYS take precedence!
+            // 1. Projects: keep local order, append any new server projects at end
+            const localProjIds = new Set((prevData.embeddedProjects || []).map((p) => p.id));
+            const newServerProjects = (serverData.embeddedProjects || []).filter(
+              (p) => !localProjIds.has(p.id)
             );
-            const mergedProjects = [...serverData.embeddedProjects, ...localOnlyProjects];
+            const mergedProjects = [...(prevData.embeddedProjects || []), ...newServerProjects];
 
-            // Reconcile LinkedIn highlights
-            const serverHighIds = new Set((serverData.linkedInHighlights || []).map((h) => h.id));
-            const localOnlyHighlights = (prevData.linkedInHighlights || []).filter(
-              (h) => !serverHighIds.has(h.id)
+            // 2. LinkedIn Highlights: keep local order, append any new server highlights at end
+            const localHighIds = new Set((prevData.linkedInHighlights || []).map((h) => h.id));
+            const newServerHighlights = (serverData.linkedInHighlights || []).filter(
+              (h) => !localHighIds.has(h.id)
             );
-            const mergedHighlights = [...(serverData.linkedInHighlights || []), ...localOnlyHighlights];
+            const mergedHighlights = [...(prevData.linkedInHighlights || []), ...newServerHighlights];
 
-            // Reconcile Spotify playlists
-            const serverSpotIds = new Set(serverData.spotifyPlaylists.map((s) => s.id));
-            const localOnlyPlaylists = (prevData.spotifyPlaylists || []).filter(
-              (s) => !serverSpotIds.has(s.id)
+            // 3. Poems: keep local order, append any new server poems at end
+            const localPoemIds = new Set((prevData.compactPoems || []).map((p) => p.id));
+            const newServerPoems = (serverData.compactPoems || []).filter(
+              (p) => !localPoemIds.has(p.id)
             );
-            const mergedPlaylists = [...serverData.spotifyPlaylists, ...localOnlyPlaylists];
+            const mergedPoems = [...(prevData.compactPoems || []), ...newServerPoems];
 
-            // Reconcile Poems
-            const serverPoemIds = new Set(serverData.compactPoems.map((p) => p.id));
-            const localOnlyPoems = (prevData.compactPoems || []).filter(
-              (p) => !serverPoemIds.has(p.id)
+            // 4. Spotify Playlists: keep local order
+            const localSpotIds = new Set((prevData.spotifyPlaylists || []).map((s) => s.id));
+            const newServerPlaylists = (serverData.spotifyPlaylists || []).filter(
+              (s) => !localSpotIds.has(s.id)
             );
-            const mergedPoems = [...serverData.compactPoems, ...localOnlyPoems];
+            const mergedPlaylists = [...(prevData.spotifyPlaylists || []), ...newServerPlaylists];
+
+            // 5. Achievements / Referências Profissionais: preserve user additions
+            const localAchIds = new Set((prevData.achievements || []).map((a) => a.id));
+            const newServerAch = (serverData.achievements || []).filter(
+              (a) => !localAchIds.has(a.id)
+            );
+            const mergedAchievements = [...(prevData.achievements || []), ...newServerAch];
+
+            // 6. Experiences: preserve user additions
+            const localExpIds = new Set((prevData.experiences || []).map((e) => e.id));
+            const newServerExp = (serverData.experiences || []).filter(
+              (e) => !localExpIds.has(e.id)
+            );
+            const mergedExperiences = [...(prevData.experiences || []), ...newServerExp];
+
+            // 7. Education, Certifications, Skills: preserve local state
+            const mergedEducation =
+              prevData.education && prevData.education.length > 0
+                ? prevData.education
+                : serverData.education || [];
+
+            const mergedCertifications =
+              prevData.certifications && prevData.certifications.length > 0
+                ? prevData.certifications
+                : serverData.certifications || [];
+
+            const mergedSkills =
+              prevData.skills && prevData.skills.length > 0
+                ? prevData.skills
+                : serverData.skills || [];
 
             const consolidated: PortfolioData = {
               ...serverData,
+              ...prevData,
               embeddedProjects: mergedProjects,
               linkedInHighlights: mergedHighlights,
-              spotifyPlaylists: mergedPlaylists,
               compactPoems: mergedPoems,
+              spotifyPlaylists: mergedPlaylists,
+              achievements: mergedAchievements,
+              experiences: mergedExperiences,
+              education: mergedEducation,
+              certifications: mergedCertifications,
+              skills: mergedSkills,
             };
 
             try {
@@ -259,19 +297,12 @@ export default function App() {
               // ignore
             }
 
-            // If local had additions not on server, enqueue and sync
-            if (
-              localOnlyProjects.length > 0 ||
-              localOnlyHighlights.length > 0 ||
-              localOnlyPlaylists.length > 0 ||
-              localOnlyPoems.length > 0
-            ) {
-              enqueuePendingSync(consolidated);
-              setPendingSyncCount(getPendingQueue().length);
-              if (navigator.onLine) {
-                flushPendingSyncQueue({ silent: true });
-              }
-            }
+            // Sync updated consolidated state to server so server file matches
+            fetch('/api/save-portfolio', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(consolidated),
+            }).catch(() => {});
 
             return consolidated;
           });
@@ -675,6 +706,60 @@ export default function App() {
     handleSaveData(updatedData);
   };
 
+  const handleMovePoem = (id: string, direction: 'prev' | 'next') => {
+    const list = [...(data.compactPoems || [])];
+    const index = list.findIndex((p) => p.id === id);
+    if (index === -1) return;
+    const targetIndex = direction === 'prev' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= list.length) return;
+
+    const temp = list[index];
+    list[index] = list[targetIndex];
+    list[targetIndex] = temp;
+
+    const updatedData = { ...data, compactPoems: list };
+    handleSaveData(updatedData);
+  };
+
+  // Handlers for Achievements & Professional References
+  const handleAddAchievement = (item: Omit<AchievementItem, 'id'>) => {
+    const newItem: AchievementItem = {
+      ...item,
+      id: `ach-${Date.now()}`,
+    };
+    const updated = [newItem, ...(data.achievements || [])];
+    const updatedData = { ...data, achievements: updated };
+    handleSaveData(updatedData);
+  };
+
+  const handleEditAchievement = (updatedItem: AchievementItem) => {
+    const list = data.achievements || [];
+    const updated = list.map((a) => (a.id === updatedItem.id ? updatedItem : a));
+    const updatedData = { ...data, achievements: updated };
+    handleSaveData(updatedData);
+  };
+
+  const handleDeleteAchievement = (id: string) => {
+    const list = (data.achievements || []).filter((a) => a.id !== id);
+    const updatedData = { ...data, achievements: list };
+    handleSaveData(updatedData);
+  };
+
+  const handleMoveAchievement = (id: string, direction: 'prev' | 'next') => {
+    const list = [...(data.achievements || [])];
+    const index = list.findIndex((a) => a.id === id);
+    if (index === -1) return;
+    const targetIndex = direction === 'prev' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= list.length) return;
+
+    const temp = list[index];
+    list[index] = list[targetIndex];
+    list[targetIndex] = temp;
+
+    const updatedData = { ...data, achievements: list };
+    handleSaveData(updatedData);
+  };
+
   return (
     <div className="min-h-screen bg-[#FAF9F5] dark:bg-[#121211] text-[#181816] dark:text-[#F5F5F0] flex flex-col font-sans transition-colors duration-200 selection:bg-[#2563EB]/15 selection:text-[#2563EB] dark:selection:bg-[#3B82F6]/25 dark:selection:text-[#3B82F6]">
       {/* Notificação Flutuante de Salvamento e Fila de Sincronização */}
@@ -799,7 +884,12 @@ export default function App() {
         {/* 5. Projetos & Conquistas */}
         <FadeInReveal>
           <AchievementsSection
-            achievements={data.achievements}
+            achievements={data.achievements || []}
+            isAdmin={isAdmin}
+            onAddAchievement={handleAddAchievement}
+            onEditAchievement={handleEditAchievement}
+            onDeleteAchievement={handleDeleteAchievement}
+            onMoveAchievement={handleMoveAchievement}
           />
         </FadeInReveal>
 
@@ -841,6 +931,7 @@ export default function App() {
             onAddPoem={handleAddPoem}
             onEditPoem={handleEditPoem}
             onDeletePoem={handleDeletePoem}
+            onMovePoem={handleMovePoem}
             isAdmin={isAdmin}
           />
         </FadeInReveal>

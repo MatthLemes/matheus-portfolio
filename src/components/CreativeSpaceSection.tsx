@@ -1,6 +1,18 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Music2, Feather, Plus, ExternalLink, Trash2, ArrowUpRight, Pencil } from 'lucide-react';
+import {
+  Music2,
+  Feather,
+  Plus,
+  ExternalLink,
+  Trash2,
+  ArrowUpRight,
+  Pencil,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  ChevronDown,
+} from 'lucide-react';
 import { SpotifyEmbedItem, PoetryCompactItem } from '../types/portfolio';
 import { staggerContainer, staggerItem } from '../utils/animationVariants';
 
@@ -14,6 +26,7 @@ interface CreativeSpaceSectionProps {
   onAddPoem: (item: Omit<PoetryCompactItem, 'id'>) => void;
   onEditPoem?: (item: PoetryCompactItem) => void;
   onDeletePoem: (id: string) => void;
+  onMovePoem?: (id: string, direction: 'prev' | 'next') => void;
   isAdmin?: boolean;
 }
 
@@ -27,6 +40,7 @@ export const CreativeSpaceSection: React.FC<CreativeSpaceSectionProps> = ({
   onAddPoem,
   onEditPoem,
   onDeletePoem,
+  onMovePoem,
   isAdmin = false,
 }) => {
   // Spotify Create Modal State
@@ -307,7 +321,7 @@ export const CreativeSpaceSection: React.FC<CreativeSpaceSectionProps> = ({
               viewport={{ once: true, amount: 0.15 }}
               className="flex md:flex-col overflow-x-auto md:overflow-x-visible no-scrollbar snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 gap-3 pb-2 md:pb-0 md:space-y-3 md:gap-0"
             >
-              {poems.map((poem) => (
+              {poems.map((poem, index) => (
                 <motion.div
                   key={poem.id}
                   variants={staggerItem}
@@ -318,6 +332,28 @@ export const CreativeSpaceSection: React.FC<CreativeSpaceSectionProps> = ({
                       <span>{poem.date || 'Poesia Autoral'}</span>
                       {isAdmin && (
                         <div className="flex items-center gap-1">
+                          {onMovePoem && (
+                            <>
+                              <button
+                                onClick={() => onMovePoem(poem.id, 'prev')}
+                                disabled={index === 0}
+                                className="text-[#73736C] hover:text-[#2563EB] dark:hover:text-[#3B82F6] disabled:opacity-25 transition-colors p-1 rounded-md hover:bg-[#F4F3EE] dark:hover:bg-[#242422]"
+                                title="Mover para cima / anterior"
+                              >
+                                <ChevronLeft className="w-3.5 h-3.5 md:hidden" />
+                                <ChevronUp className="w-3.5 h-3.5 hidden md:block" />
+                              </button>
+                              <button
+                                onClick={() => onMovePoem(poem.id, 'next')}
+                                disabled={index === poems.length - 1}
+                                className="text-[#73736C] hover:text-[#2563EB] dark:hover:text-[#3B82F6] disabled:opacity-25 transition-colors p-1 rounded-md hover:bg-[#F4F3EE] dark:hover:bg-[#242422]"
+                                title="Mover para baixo / seguinte"
+                              >
+                                <ChevronRight className="w-3.5 h-3.5 md:hidden" />
+                                <ChevronDown className="w-3.5 h-3.5 hidden md:block" />
+                              </button>
+                            </>
+                          )}
                           <button
                             onClick={() => startEditPoem(poem)}
                             className="text-[#73736C] hover:text-[#2563EB] dark:hover:text-[#3B82F6] transition-colors p-1 rounded-md hover:bg-[#F4F3EE] dark:hover:bg-[#242422]"
@@ -326,7 +362,11 @@ export const CreativeSpaceSection: React.FC<CreativeSpaceSectionProps> = ({
                             <Pencil className="w-3.5 h-3.5" />
                           </button>
                           <button
-                            onClick={() => onDeletePoem(poem.id)}
+                            onClick={() => {
+                              if (window.confirm(`Deseja remover "${poem.title}"?`)) {
+                                onDeletePoem(poem.id);
+                              }
+                            }}
                             className="text-[#A8A89E] hover:text-red-500 transition-colors p-1 rounded-md hover:bg-red-500/10"
                             title="Remover poesia"
                           >
