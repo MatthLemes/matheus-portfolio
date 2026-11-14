@@ -97,6 +97,14 @@
   ],
   "achievements": [
     {
+      "title": "Excelência de Carreira",
+      "organization": "Na Prática, Saint Paul & Exame",
+      "year": "2026",
+      "badge": "Bolsista",
+      "description": "Curso de aprimoramento e visão de carreira. Onde foi proposto o desafio de criar um MVP, minha proposta consistiu em criar um aplicativo de comunicação e retórica.",
+      "id": "ach-1794571839896"
+    },
+    {
       "id": "ach-1",
       "title": "Conferência de Carreira Na Prática (2026)",
       "organization": "Fundação Estudar / Na Prática",
@@ -341,42 +349,67 @@
   ],
   "compactPoems": [
     {
-      "id": "poem-1790462311376",
-      "title": "Bela Vista",
-      "excerpt": "\"Essa cidade é muito convidativa\nFloresce miúda e vermelha, lanterna chinesa\"",
-      "mediumUrl": "https://medium.com/@lemure/bella-vista-93718966e77b",
-      "date": "Recente"
-    },
-    {
-      "id": "poem-depois-do-guincho",
       "title": "Depois do Guincho",
-      "excerpt": "\"Reflexões e versos sobre o tempo, a partida e o recomeço.\"",
-      "mediumUrl": "https://medium.com/@lemure",
-      "date": "2025"
-    },
-    {
-      "id": "poem-1790462001169",
-      "title": "Ocaso e o acaso",
-      "excerpt": "\"Me visto da classe de bicho\nQue não cabe em gaiola\nQue se olha livre, o poeta poente\nSem ordem, sem classe, oxente\"",
-      "mediumUrl": "https://medium.com/@lemure/ocaso-e-o-acaso-7747717de7d2",
-      "date": "Recente"
-    },
-    {
-      "id": "poem-1790461273785",
-      "title": "Amoras",
-      "excerpt": "\"E que possamos encontrar em nós mesmos\nO amor que amorou, em toda a sua medida.\"",
-      "mediumUrl": "https://medium.com/@lemure/amoras-32216fceed9e",
-      "date": "Recente"
+      "excerpt": "\"Por muitas vezes na ânsia de ser imortal, eu morro antes aqui para viver no mais simples cotidiano\"",
+      "mediumUrl": "https://medium.com/@lemure/depois-do-guincho-e569e342de0c",
+      "date": "2026",
+      "id": "poem-1794340678137"
     },
     {
       "id": "poem-1790461121314",
       "title": "Ainda sem título, mas é sobre você",
       "excerpt": "\"Não há a menor dúvida.\nHá uma doçura infantil no ar, a quietude de uma espera tão certa quanto a chegada de um arcano.\nOs olhos estão ternos e meigos;\nEmbora a gente não veja, está sorrindo.\"",
       "mediumUrl": "https://medium.com/@lemure/ainda-sem-t%C3%ADtulo-mas-%C3%A9-sobre-voc%C3%AA-8d30a39ce9a2",
-      "date": "Recente"
+      "date": "2025"
+    },
+    {
+      "id": "poem-1790462311376",
+      "title": "Bela Vista",
+      "excerpt": "\"Essa cidade é muito convidativa\nFloresce miúda e vermelha, lanterna chinesa\"",
+      "mediumUrl": "https://medium.com/@lemure/bella-vista-93718966e77b",
+      "date": "2023"
+    },
+    {
+      "id": "poem-1790462001169",
+      "title": "Ocaso e o acaso",
+      "excerpt": "\"Me visto da classe de bicho\nQue não cabe em gaiola\nQue se olha livre, o poeta poente\nSem ordem, sem classe, oxente\"",
+      "mediumUrl": "https://medium.com/@lemure/ocaso-e-o-acaso-7747717de7d2",
+      "date": "2022"
+    },
+    {
+      "id": "poem-1790461273785",
+      "title": "Amoras",
+      "excerpt": "\"E que possamos encontrar em nós mesmos\nO amor que amorou, em toda a sua medida.\"",
+      "mediumUrl": "https://medium.com/@lemure/amoras-32216fceed9e",
+      "date": "2023"
+    },
+    {
+      "id": "poem-depois-do-guincho",
+      "title": "Não tão aprazível presença",
+      "excerpt": "\"Ao finalizar uma estrofe\nSinto como se estivesse colocando um ponto final em um momento intangível\nÉ como rasgar um papel, lavar a louça, colocar para secar\nDe estar ali, e depois não mais\nPara criar confiança, e fazer tudo de novo\"",
+      "mediumUrl": "https://medium.com/@lemure/n%C3%A3o-t%C3%A3o-apraz%C3%ADvel-presen%C3%A7a-05027d1aa77c",
+      "date": "2024"
     }
   ],
   "linkedInHighlights": [
+    {
+      "title": "Excelência de Carreira Modulo 2: Papo com CEO da \"PagueMenos\" Jonas Marques",
+      "snippet": "",
+      "url": "https://lnkd.in/p/dUkyNiwG",
+      "embedCode": "<iframe src=\"https://www.linkedin.com/embed/feed/update/urn:li:share:7517288545372467201?collapsed=1\" height=\"542\" width=\"504\" frameborder=\"0\" allowfullscreen=\"\" title=\"Publicação incorporada\"></iframe>",
+      "tag": "Palestras & Histórias",
+      "date": "2026",
+      "id": "li-1794340984795"
+    },
+    {
+      "title": "Excelência de Carreira - MVP \"RHETA\"",
+      "snippet": "",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7513312155509772288/",
+      "embedCode": "<iframe src=\"https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7513004441512480768?collapsed=1\" height=\"566\" width=\"504\" frameborder=\"0\" allowfullscreen=\"\" title=\"Publicação incorporada\"></iframe>",
+      "tag": "Credenciais & Carreira",
+      "date": "2026",
+      "id": "li-1794340799346"
+    },
     {
       "id": "li-1790460578595",
       "title": "Carreira de Excelência - Na Prática",
@@ -385,6 +418,15 @@
       "embedCode": "<iframe src=\"https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7508143077077909505?collapsed=1\" height=\"566\" width=\"504\" frameborder=\"0\" allowfullscreen=\"\" title=\"Publicação incorporada\"></iframe>",
       "tag": "Eventos de Carreira",
       "date": "2026"
+    },
+    {
+      "title": "Vibe Coding Game - De Piedade ao Nordeste",
+      "snippet": "",
+      "url": "https://lnkd.in/p/diqaTrvd",
+      "embedCode": "<iframe src=\"https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7525656472521760768?collapsed=1\" height=\"566\" width=\"504\" frameborder=\"0\" allowfullscreen=\"\" title=\"Publicação incorporada\"></iframe>",
+      "tag": "Credenciais & Carreira",
+      "date": "2026",
+      "id": "li-1794340890217"
     },
     {
       "id": "li-1790460477555",
@@ -430,6 +472,15 @@
       "embedCode": "<iframe src=\"https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7399535967675592705?collapsed=1\" height=\"566\" width=\"504\" frameborder=\"0\" allowfullscreen=\"\" title=\"Publicação incorporada\"></iframe>",
       "tag": "Histórias & Trajetória",
       "date": "2019 - 2022"
+    },
+    {
+      "title": "FGV - Business Inteligence (BI)",
+      "snippet": "",
+      "url": "https://lnkd.in/p/dSj-K5P5",
+      "embedCode": "<iframe src=\"https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7511059566739259393?collapsed=1\" height=\"566\" width=\"504\" frameborder=\"0\" allowfullscreen=\"\" title=\"Publicação incorporada\"></iframe>",
+      "tag": "Credenciais & Carreira",
+      "date": "2026",
+      "id": "li-1794341056352"
     }
   ]
 }
